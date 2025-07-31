@@ -176,11 +176,14 @@ def make_metadata(
     model_path = model_name.replace(':', '_').replace('@', '-')
     eval_note = f'_N_{eval_note}' if eval_note else ''
 
+    # Add timestamp to make each run unique
+    timestamp = time.strftime('%Y%m%d_%H%M%S')
+    
     eval_output_path = os.path.join(
         eval_output_dir,
         dataset_name,
         agent_class,
-        f'{model_path}_maxiter_{max_iterations}{eval_note}',
+        f'{model_path}_maxiter_{max_iterations}{eval_note}_{timestamp}',
     )
 
     pathlib.Path(eval_output_path).mkdir(parents=True, exist_ok=True)
