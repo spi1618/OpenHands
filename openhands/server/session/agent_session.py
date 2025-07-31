@@ -27,6 +27,7 @@ from openhands.microagent.microagent import BaseMicroagent
 from openhands.runtime import get_runtime_cls
 from openhands.runtime.base import Runtime
 from openhands.runtime.impl.remote.remote_runtime import RemoteRuntime
+from openhands.runtime.runtime_status import RuntimeStatus
 from openhands.security import SecurityAnalyzer, options
 from openhands.storage.data_models.user_secrets import UserSecrets
 from openhands.storage.files import FileStore
@@ -123,7 +124,7 @@ class AgentSession:
         runtime_connected = False
         restored_state = False
         custom_secrets_handler = UserSecrets(
-            custom_secrets=custom_secrets if custom_secrets else {}
+            custom_secrets=custom_secrets if custom_secrets else {}  # type: ignore[arg-type]
         )
         try:
             self._create_security_analyzer(config.security.security_analyzer)
@@ -153,12 +154,13 @@ class AgentSession:
                 repo_directory=repo_directory,
                 conversation_instructions=conversation_instructions,
                 custom_secrets_descriptions=custom_secrets_handler.get_custom_secrets_descriptions(),
+                working_dir=config.workspace_mount_path_in_sandbox,
             )
 
             # NOTE: this needs to happen before controller is created
             # so MCP tools can be included into the SystemMessageAction
             if self.runtime and runtime_connected and agent.config.enable_mcp:
-                await add_mcp_tools_to_agent(agent, self.runtime, self.memory, config)
+                await add_mcp_tools_to_agent(agent, self.runtime, self.memory)
 
             if replay_json:
                 initial_message = self._run_replay(
@@ -289,12 +291,16 @@ class AgentSession:
         custom_secrets: CUSTOM_SECRETS_TYPE | None,
     ):
         if git_provider_tokens and custom_secrets:
-            tokens = dict(git_provider_tokens)
-            for provider, _ in tokens.items():
-                token_name = ProviderHandler.get_provider_env_key(provider)
-                if token_name in custom_secrets or token_name.upper() in custom_secrets:
-                    del tokens[provider]
-
+            # Use dictionary comprehension to avoid modifying dictionary during iteration
+            tokens = {
+                provider: token
+                for provider, token in git_provider_tokens.items()
+                if not (
+                    ProviderHandler.get_provider_env_key(provider) in custom_secrets
+                    or ProviderHandler.get_provider_env_key(provider).upper()
+                    in custom_secrets
+                )
+            }
             return MappingProxyType(tokens)
         return git_provider_tokens
 
@@ -322,7 +328,7 @@ class AgentSession:
         if self.runtime is not None:
             raise RuntimeError('Runtime already created')
 
-        custom_secrets_handler = UserSecrets(custom_secrets=custom_secrets or {})
+        custom_secrets_handler = UserSecrets(custom_secrets=custom_secrets or {})  # type: ignore[arg-type]
         env_vars = custom_secrets_handler.get_env_vars()
 
         self.logger.debug(f'Initializing runtime `{runtime_name}` now...')
@@ -330,10 +336,8 @@ class AgentSession:
         if runtime_cls == RemoteRuntime:
             # If provider tokens is passed in custom secrets, then remove provider from provider tokens
             # We prioritize provider tokens set in custom secrets
-            provider_tokens_without_gitlab = (
-                self.override_provider_tokens_with_custom_secret(
-                    git_provider_tokens, custom_secrets
-                )
+            overrided_tokens = self.override_provider_tokens_with_custom_secret(
+                git_provider_tokens, custom_secrets
             )
 
             self.runtime = runtime_cls(
@@ -344,7 +348,7 @@ class AgentSession:
                 status_callback=self._status_callback,
                 headless_mode=False,
                 attach_to_existing=False,
-                git_provider_tokens=provider_tokens_without_gitlab,
+                git_provider_tokens=overrided_tokens,
                 env_vars=env_vars,
                 user_id=self.user_id,
             )
@@ -379,7 +383,7 @@ class AgentSession:
             self.logger.error(f'Runtime initialization failed: {e}')
             if self._status_callback:
                 self._status_callback(
-                    'error', 'STATUS$ERROR_RUNTIME_DISCONNECTED', str(e)
+                    'error', RuntimeStatus.ERROR_RUNTIME_DISCONNECTED, str(e)
                 )
             return False
 
@@ -461,6 +465,7 @@ class AgentSession:
         repo_directory: str | None,
         conversation_instructions: str | None,
         custom_secrets_descriptions: dict[str, str],
+        working_dir: str,
     ) -> Memory:
         memory = Memory(
             event_stream=self.event_stream,
@@ -470,7 +475,9 @@ class AgentSession:
 
         if self.runtime:
             # sets available hosts and other runtime info
-            memory.set_runtime_info(self.runtime, custom_secrets_descriptions)
+            memory.set_runtime_info(
+                self.runtime, custom_secrets_descriptions, working_dir
+            )
             memory.set_conversation_instructions(conversation_instructions)
 
             # loads microagents from repo/.openhands/microagents

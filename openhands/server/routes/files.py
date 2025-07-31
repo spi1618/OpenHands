@@ -1,12 +1,7 @@
 import os
 from typing import Any
 
-from fastapi import (
-    APIRouter,
-    Depends,
-    HTTPException,
-    status,
-)
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from fastapi.responses import FileResponse, JSONResponse
 from pathspec import PathSpec
 from pathspec.patterns import GitWildMatchPattern
@@ -17,15 +12,15 @@ from openhands.core.logger import openhands_logger as logger
 from openhands.events.action import (
     FileReadAction,
 )
+from openhands.events.action.files import FileWriteAction
 from openhands.events.observation import (
     ErrorObservation,
     FileReadObservation,
 )
 from openhands.runtime.base import Runtime
 from openhands.server.dependencies import get_dependencies
-from openhands.server.file_config import (
-    FILES_TO_IGNORE,
-)
+from openhands.server.file_config import FILES_TO_IGNORE
+from openhands.server.files import POSTUploadFilesModel
 from openhands.server.session.conversation import ServerConversation
 from openhands.server.user_auth import get_user_id
 from openhands.server.utils import get_conversation, get_conversation_store
@@ -239,11 +234,7 @@ async def git_changes(
 ) -> list[dict[str, str]] | JSONResponse:
     runtime: Runtime = conversation.runtime
 
-    cwd = await get_cwd(
-        conversation_store,
-        conversation.sid,
-        runtime.config.workspace_mount_path_in_sandbox,
-    )
+    cwd = runtime.config.workspace_mount_path_in_sandbox
     logger.info(f'Getting git changes in {cwd}')
 
     try:
@@ -280,11 +271,7 @@ async def git_diff(
 ) -> dict[str, Any] | JSONResponse:
     runtime: Runtime = conversation.runtime
 
-    cwd = await get_cwd(
-        conversation_store,
-        conversation.sid,
-        runtime.config.workspace_mount_path_in_sandbox,
-    )
+    cwd = runtime.config.workspace_mount_path_in_sandbox
 
     try:
         diff = await call_sync_from_async(runtime.get_git_diff, path, cwd)
@@ -297,15 +284,35 @@ async def git_diff(
         )
 
 
-async def get_cwd(
-    conversation_store: ConversationStore,
-    conversation_id: str,
-    workspace_mount_path_in_sandbox: str,
-) -> str:
-    metadata = await conversation_store.get_metadata(conversation_id)
-    cwd = workspace_mount_path_in_sandbox
-    if metadata and metadata.selected_repository:
-        repo_dir = metadata.selected_repository.split('/')[-1]
-        cwd = os.path.join(cwd, repo_dir)
+@app.post('/upload-files', response_model=POSTUploadFilesModel)
+async def upload_files(
+    files: list[UploadFile],
+    conversation: ServerConversation = Depends(get_conversation),
+):
+    uploaded_files = []
+    skipped_files = []
+    runtime: Runtime = conversation.runtime
 
-    return cwd
+    for file in files:
+        file_path = os.path.join(
+            runtime.config.workspace_mount_path_in_sandbox, str(file.filename)
+        )
+        try:
+            file_content = await file.read()
+            write_action = FileWriteAction(
+                # TODO: DISCUSS UTF8 encoding here
+                path=file_path,
+                content=file_content.decode('utf-8', errors='replace'),
+            )
+            # TODO: DISCUSS file name unique issues
+            await call_sync_from_async(runtime.run_action, write_action)
+            uploaded_files.append(file_path)
+        except Exception as e:
+            skipped_files.append({'name': file.filename, 'reason': str(e)})
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={
+            'uploaded_files': uploaded_files,
+            'skipped_files': skipped_files,
+        },
+    )

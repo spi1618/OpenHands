@@ -10,6 +10,7 @@ import { createChatMessage } from "#/services/chat-service";
 import { InteractiveChatBox } from "./interactive-chat-box";
 import { RootState } from "#/store";
 import { AgentState } from "#/types/agent-state";
+import { isOpenHandsAction } from "#/types/core/guards";
 import { generateAgentStateChangeEvent } from "#/services/agent-state-service";
 import { FeedbackModal } from "../feedback/feedback-modal";
 import { useScrollToBottom } from "#/hooks/use-scroll-to-bottom";
@@ -29,7 +30,9 @@ import { useOptimisticUserMessage } from "#/hooks/use-optimistic-user-message";
 import { useWSErrorMessage } from "#/hooks/use-ws-error-message";
 import { ErrorMessageBanner } from "./error-message-banner";
 import { shouldRenderEvent } from "./event-content-helpers/should-render-event";
+import { useUploadFiles } from "#/hooks/mutation/use-upload-files";
 import { useConfig } from "#/hooks/query/use-config";
+import { validateFiles } from "#/utils/file-validation";
 
 function getEntryPoint(
   hasRepository: boolean | null,
@@ -69,13 +72,33 @@ export function ChatInterface() {
   );
   const params = useParams();
   const { mutate: getTrajectory } = useGetTrajectory();
+  const { mutateAsync: uploadFiles } = useUploadFiles();
 
   const optimisticUserMessage = getOptimisticUserMessage();
   const errorMessage = getErrorMessage();
 
   const events = parsedEvents.filter(shouldRenderEvent);
 
-  const handleSendMessage = async (content: string, files: File[]) => {
+  // Check if there are any substantive agent actions (not just system messages)
+  const hasSubstantiveAgentActions = React.useMemo(
+    () =>
+      parsedEvents.some(
+        (event) =>
+          isOpenHandsAction(event) &&
+          event.source === "agent" &&
+          event.action !== "system",
+      ),
+    [parsedEvents],
+  );
+
+  const handleSendMessage = async (
+    content: string,
+    originalImages: File[],
+    originalFiles: File[],
+  ) => {
+    // Create mutable copies of the arrays
+    const images = [...originalImages];
+    const files = [...originalFiles];
     if (events.length === 0) {
       posthog.capture("initial_query_submitted", {
         entry_point: getEntryPoint(
@@ -91,11 +114,33 @@ export function ChatInterface() {
         current_message_length: content.length,
       });
     }
-    const promises = files.map((file) => convertImageToBase64(file));
+
+    // Validate file sizes before any processing
+    const allFiles = [...images, ...files];
+    const validation = validateFiles(allFiles);
+
+    if (!validation.isValid) {
+      displayErrorToast(`Error: ${validation.errorMessage}`);
+      return; // Stop processing if validation fails
+    }
+
+    const promises = images.map((image) => convertImageToBase64(image));
     const imageUrls = await Promise.all(promises);
 
     const timestamp = new Date().toISOString();
-    send(createChatMessage(content, imageUrls, timestamp));
+
+    const { skipped_files: skippedFiles, uploaded_files: uploadedFiles } =
+      files.length > 0
+        ? await uploadFiles({ conversationId: params.conversationId!, files })
+        : { skipped_files: [], uploaded_files: [] };
+
+    skippedFiles.forEach((f) => displayErrorToast(f.reason));
+
+    const filePrompt = `${t("CHAT_INTERFACE$AUGMENTED_PROMPT_FILES_TITLE")}: ${uploadedFiles.join("\n\n")}`;
+    const prompt =
+      uploadedFiles.length > 0 ? `${content}\n\n${filePrompt}` : content;
+
+    send(createChatMessage(prompt, imageUrls, uploadedFiles, timestamp));
     setOptimisticUserMessage(content);
     setMessageToSend(null);
   };
@@ -149,9 +194,12 @@ export function ChatInterface() {
   return (
     <ScrollProvider value={scrollProviderValue}>
       <div className="h-full flex flex-col justify-between">
-        {events.length === 0 && !optimisticUserMessage && (
-          <ChatSuggestions onSuggestionsClick={setMessageToSend} />
-        )}
+        {!hasSubstantiveAgentActions &&
+          !optimisticUserMessage &&
+          !events.some(
+            (event) => isOpenHandsAction(event) && event.source === "user",
+          ) && <ChatSuggestions onSuggestionsClick={setMessageToSend} />}
+        {/* Note: We only hide chat suggestions when there's a user message */}
 
         <div
           ref={scrollRef}
@@ -174,10 +222,10 @@ export function ChatInterface() {
           )}
 
           {isWaitingForUserInput &&
-            events.length > 0 &&
+            hasSubstantiveAgentActions &&
             !optimisticUserMessage && (
               <ActionSuggestions
-                onSuggestionsClick={(value) => handleSendMessage(value, [])}
+                onSuggestionsClick={(value) => handleSendMessage(value, [], [])}
               />
             )}
         </div>
