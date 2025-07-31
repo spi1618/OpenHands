@@ -3,7 +3,8 @@ import copy
 import json
 import os
 import tempfile
-from typing import Any, Literal
+import requests
+from typing import Any, Literal, List, Dict, Optional
 
 import pandas as pd
 import toml
@@ -60,6 +61,107 @@ from openhands.events.serialization.event import event_from_dict, event_to_dict
 from openhands.runtime.base import Runtime
 from openhands.utils.async_utils import call_async_from_sync
 from openhands.utils.shutdown_listener import sleep_if_should_continue
+
+# Router configuration
+global ROUTER_URL
+ROUTER_URL = os.environ.get('ROUTER_URL', 'http://localhost:8000')
+AVAILABLE_MODELS = [
+    "neulab/claude-3-5-haiku-20241022",
+    "neulab/claude-sonnet-4-20250514", 
+    "neulab/devstral-small-2505",
+    "neulab/deepseek-v3",
+]
+
+class RouterManager:
+    """Manages router calls and model switching during evaluation."""
+    
+    def __init__(self, router_url: str = ROUTER_URL):
+        self.router_url = router_url
+        self.trajectory = []
+        self.current_model = None
+        self.model_usage_count = {model: 0 for model in AVAILABLE_MODELS}
+        
+    def add_to_trajectory(self, event: Dict):
+        """Add an event to the trajectory."""
+        # Convert event to trajectory format
+        if event.get("source") == "agent":
+            if "action" in event:
+                self.trajectory.append({
+                    "source": "agent",
+                    "action": event.get("action", ""),
+                    "content": event.get("message", "")
+                })
+        elif event.get("source") == "environment":
+            if "observation" in event:
+                self.trajectory.append({
+                    "source": "environment", 
+                    "observation": event.get("observation", ""),
+                    "content": event.get("content", "")
+                })
+        elif event.get("source") == "user":
+            self.trajectory.append({
+                "source": "user",
+                "content": event.get("message", "")
+            })
+    
+    def call_router(self) -> Optional[str]:
+        """Call the router to get the best model for the next step."""
+        try:
+            # Prepare the request
+            request_data = {
+                "partial_trajectory": self.trajectory
+            }
+            
+            # Call the router
+            response = requests.post(
+                f"{self.router_url}/route_swe_bench",
+                json=request_data,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                selected_model = result["selected_model"]
+                confidence = result["confidence"]
+                
+                logger.info(f"Router selected {selected_model} with confidence {confidence:.3f}")
+                logger.info(f"All probabilities: {result['all_probabilities']}")
+                
+                # Update usage count
+                self.model_usage_count[selected_model] += 1
+                
+                return selected_model
+            else:
+                logger.error(f"Router call failed: {response.status_code} - {response.text}")
+                return None
+                
+        except Exception as e:
+            logger.error(f"Error calling router: {e}")
+            return None
+    
+    def update_llm_config(self, config: OpenHandsConfig, model_name: str):
+        """Update the LLM config to use the selected model."""
+        # Get the base LLM config
+        base_llm_config = config.get_llm_config()
+        
+        # Create a new config with the selected model
+        new_llm_config = copy.deepcopy(base_llm_config)
+        
+        # Ensure the model name has the litellm_proxy prefix
+        if not model_name.startswith('litellm_proxy/'):
+            new_llm_config.model = f"litellm_proxy/{model_name}"
+        else:
+            new_llm_config.model = model_name
+        
+        # Update the config
+        config.set_llm_config(new_llm_config)
+        
+        logger.info(f"Updated LLM config to use model: {new_llm_config.model}")
+        return config
+    
+    def get_usage_summary(self) -> Dict[str, int]:
+        """Get summary of model usage."""
+        return self.model_usage_count.copy()
 
 USE_HINT_TEXT = os.environ.get('USE_HINT_TEXT', 'false').lower() == 'true'
 RUN_WITH_BROWSING = os.environ.get('RUN_WITH_BROWSING', 'false').lower() == 'true'
@@ -596,6 +698,9 @@ def process_instance(
     reset_logger: bool = True,
     runtime_failure_count: int = 0,
 ) -> EvalOutput:
+    # Initialize router manager
+    router_manager = RouterManager()
+    
     config = get_config(instance, metadata)
 
     # Setup the logger properly, so you can run multi-processing to parallelize the evaluation
@@ -603,7 +708,7 @@ def process_instance(
         log_dir = os.path.join(metadata.eval_output_dir, 'infer_logs')
         reset_logger_for_multiprocessing(logger, instance.instance_id, log_dir)
     else:
-        logger.info(f'Starting evaluation for instance {instance.instance_id}.')
+        logger.info(f'Starting router-integrated evaluation for instance {instance.instance_id}.')
 
     # Increase resource_factor with increasing attempt_id
     if runtime_failure_count > 0:
@@ -628,13 +733,32 @@ def process_instance(
         initialize_runtime(runtime, instance, metadata)
 
         message_action = get_instruction(instance, metadata)
+        
+        # Add initial user message to trajectory
+        router_manager.add_to_trajectory({
+            "source": "user",
+            "message": message_action.content
+        })
+        
+        # Get initial model from router
+        initial_model = router_manager.call_router()
+        if initial_model:
+            config = router_manager.update_llm_config(config, initial_model)
+            router_manager.current_model = initial_model
+            logger.info(f"Router selected initial model: {initial_model}")
+        else:
+            # Fallback to first available model
+            config = router_manager.update_llm_config(config, AVAILABLE_MODELS[0])
+            router_manager.current_model = AVAILABLE_MODELS[0]
+            logger.info(f"Router failed, using fallback model: {AVAILABLE_MODELS[0]}")
 
         # Here's how you can run the agent (similar to the `main` function) and get the final task state
         state: State | None = asyncio.run(
-            run_controller(
+            run_controller_with_router(
                 config=config,
                 initial_user_action=message_action,
                 runtime=runtime,
+                router_manager=router_manager,
                 fake_user_response_fn=AGENT_CLS_TO_FAKE_USER_RESPONSE_FN[
                     metadata.agent_class
                 ],
@@ -667,6 +791,7 @@ def process_instance(
     # because the agent may alter the environment / testcases
     test_result = {
         'git_patch': git_patch,
+        'router_usage': router_manager.get_usage_summary(),
     }
 
     # If you are working on some simpler benchmark that only evaluates the final model output (e.g., in a MessageAction)
@@ -695,6 +820,35 @@ def process_instance(
         error=state.last_error if state and state.last_error else None,
     )
     return output
+
+
+async def run_controller_with_router(
+    config: OpenHandsConfig,
+    initial_user_action: MessageAction,
+    runtime: Runtime,
+    router_manager: RouterManager,
+    fake_user_response_fn,
+) -> State:
+    """Run the controller with router integration."""
+    
+    # For now, we'll use a simplified approach that calls the router at the beginning
+    # and potentially switches models during execution. In a full implementation,
+    # you would need to modify the controller to call the router after each step.
+    
+    # Run the original controller
+    state = await run_controller(
+        config=config,
+        initial_user_action=initial_user_action,
+        runtime=runtime,
+        fake_user_response_fn=fake_user_response_fn,
+    )
+    
+    # After the agent completes, we could analyze the trajectory and potentially
+    # retry with a different model if needed. For now, we'll just log the usage.
+    
+    logger.info(f"Router usage summary: {router_manager.get_usage_summary()}")
+    
+    return state
 
 
 def filter_dataset(dataset: pd.DataFrame, filter_column: str) -> pd.DataFrame:
@@ -760,8 +914,17 @@ if __name__ == '__main__':
         choices=['swe', 'swt', 'swt-ci'],
         help="mode to run the evaluation, either 'swe', 'swt', or 'swt-ci'",
     )
+    parser.add_argument(
+        '--router-url',
+        type=str,
+        default=ROUTER_URL,
+        help='URL of the router server',
+    )
 
     args, _ = parser.parse_known_args()
+    
+    # Update router URL from command line argument
+    ROUTER_URL = args.router_url
 
     # NOTE: It is preferable to load datasets from huggingface datasets and perform post-processing
     # so we don't need to manage file uploading to OpenHands's repo
