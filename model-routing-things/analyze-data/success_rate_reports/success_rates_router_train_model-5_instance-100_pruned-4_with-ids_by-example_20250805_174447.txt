@@ -1,0 +1,49 @@
+Success Rate Analysis Results
+Generated: 2025-08-05 17:44:47
+Dataset: router_train_model-5_instance-100_pruned-4_with-ids_by-example
+Train file: /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/router_train_model-5_instance-100_pruned-4_with-ids_by-example.jsonl
+Validation file: /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/router_valid_model-5_instance-100_pruned-4_with-ids_by-example.jsonl
+================================================================================
+
+================================================================================
+SUCCESS RATE ANALYSIS - Train
+================================================================================
+Total examples processed: 21878
+
+OVERALL STATISTICS:
+  Successful patches: 4608
+  Failed patches: 17270
+  Overall success rate: 21.06%
+
+BREAKDOWN BY MODEL:
+-------------------------------------------------------------------------------------------------------------------------
+Model                          Successful   Failed   Total   Success Rate   Success Inst   Total Inst   Inst Success Rate
+-------------------------------------------------------------------------------------------------------------------------
+claude-3-5-haiku               173          2694     2867    6.03       %   7              76           9.21            %
+claude-sonnet-4                2337         3239     5576    41.91      %   35             79           44.30           %
+deepseek-v3                    249          3391     3640    6.84       %   11             79           13.92           %
+devstral-small                 452          4166     4618    9.79       %   12             73           16.44           %
+kimi-k2                        1397         3780     5177    26.98      %   25             79           31.65           %
+-------------------------------------------------------------------------------------------------------------------------
+
+================================================================================
+SUCCESS RATE ANALYSIS - Validation
+================================================================================
+Total examples processed: 5327
+
+OVERALL STATISTICS:
+  Successful patches: 793
+  Failed patches: 4534
+  Overall success rate: 14.89%
+
+BREAKDOWN BY MODEL:
+-------------------------------------------------------------------------------------------------------------------------
+Model                          Successful   Failed   Total   Success Rate   Success Inst   Total Inst   Inst Success Rate
+-------------------------------------------------------------------------------------------------------------------------
+claude-3-5-haiku               31           752      783     3.96       %   1              20           5.00            %
+claude-sonnet-4                334          1031     1365    24.47      %   5              20           25.00           %
+deepseek-v3                    73           648      721     10.12      %   1              19           5.26            %
+devstral-small                 120          1057     1177    10.20      %   3              19           15.79           %
+kimi-k2                        235          1046     1281    18.35      %   4              20           20.00           %
+-------------------------------------------------------------------------------------------------------------------------
+

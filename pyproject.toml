@@ -88,6 +88,7 @@ boto3 = "*"
 transformers = "^4.53.2"
 trl = "^0.19.1"
 wandb = "^0.21.0"
+kubernetes = "^33.1.0"
 
 [tool.poetry.group.dev]
 optional = true

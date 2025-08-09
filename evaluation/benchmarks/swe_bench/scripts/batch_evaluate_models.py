@@ -168,7 +168,7 @@ def main():
             
             # Run inference
             output_file = run_inference(model, f"experiment_{timestamp}", eval_limit, max_iter, args.num_workers)
-            # output_file = "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/outputs/SWE-Gym__SWE-Gym-train/CodeActAgent/deepseek-v3_maxiter_100_N_v0.43.0-no-hint-run_1_20250726_180617/output.jsonl"
+            # output_file = "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/outputs/SWE-Gym__SWE-Gym-train/CodeActAgent/claude-3-5-haiku-20241022_maxiter_100_N_v0.43.0-no-hint-run_1_20250801_042435/output.jsonl"
             
             # Run evaluation if not skipped
             if not args.skip_evaluation and output_file:

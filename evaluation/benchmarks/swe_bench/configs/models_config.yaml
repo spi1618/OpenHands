@@ -1,0 +1,30 @@
+# Models to evaluate and global run parameters
+# -------------------------------------------
+
+models:
+  - name: "claude-3-5-haiku"
+    llm_config: "llm.neulab_claude_3_5_haiku"
+
+  # - name: "claude-sonnet-4"
+  #   llm_config: "llm.neulab_claude_sonnet_4"
+
+  # - name: "deepseek-v3"
+  #   llm_config: "llm.neulab_deepseek_v3"
+    
+  # - name: "devstral-small"
+  #   llm_config: "llm.neulab_devstral_small"
+
+  # - name: "kimi-k2"
+  #   llm_config: "llm.neulab_kimi_k2"
+
+  # - name: "router"
+  #   llm_config: "llm.router"
+
+# # Hugging Face dataset identifier
+# dataset: "princeton-nlp/SWE-bench_Lite"
+
+# Max #instances to evaluate  (-1 = everything in split)
+eval_limit: 100
+
+# Controller max-iteration cap for each instance
+max_iter: 100

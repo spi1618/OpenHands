@@ -1,0 +1,1054 @@
+Token Length Analysis Results
+Generated: 2025-08-05 16:39:41
+Dataset: model-5_instance-100_pruned-4_with-ids_by-example
+Train file: /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/router_train_model-5_instance-100_pruned-4_with-ids_by-example.jsonl
+Valid file: /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/router_valid_model-5_instance-100_pruned-4_with-ids_by-example.jsonl
+================================================================================
+
+
+=== Analyzing Training ===
+Analyzed 21878 examples
+Token length statistics:
+  Mean: 12220.2
+  Median: 9380.0
+  Min: 2973
+  Max: 1703571
+  Std: 27418.2
+
+Trajectory length statistics:
+  Mean: 7.9
+  Median: 8.0
+  Min: 4
+  Max: 17
+
+Token length distribution:
+  > 1,000 tokens: 21878 examples (100.0%)
+  > 2,000 tokens: 21878 examples (100.0%)
+  > 4,000 tokens: 21869 examples (100.0%)
+  > 8,000 tokens: 14064 examples (64.3%)
+  > 16,000 tokens: 2976 examples (13.6%)
+  > 32,000 tokens: 316 examples (1.4%)
+  > 64,000 tokens: 127 examples (0.6%)
+  > 128,000 tokens: 78 examples (0.4%)
+
+=== Analyzing Validation ===
+Analyzed 5327 examples
+Token length statistics:
+  Mean: 11221.0
+  Median: 9885.0
+  Min: 428
+  Max: 46042
+  Std: 5322.6
+
+Trajectory length statistics:
+  Mean: 7.9
+  Median: 8.0
+  Min: 4
+  Max: 17
+
+Token length distribution:
+  > 1,000 tokens: 5314 examples (99.8%)
+  > 2,000 tokens: 5314 examples (99.8%)
+  > 4,000 tokens: 5313 examples (99.7%)
+  > 8,000 tokens: 3581 examples (67.2%)
+  > 16,000 tokens: 799 examples (15.0%)
+  > 32,000 tokens: 47 examples (0.9%)
+  > 64,000 tokens: 0 examples (0.0%)
+  > 128,000 tokens: 0 examples (0.0%)
+
+=== Looking for extremely long examples ===
+Error mentioned: 146,015 tokens > 131,072 max
+
+Searching Training for examples > 100k tokens...
+  Found extremely long example 6950:
+    Token length: 125,241
+    Trajectory steps: 8
+    Instance ID: Project-MONAI__MONAI-3785
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 5, 'timestamp': '2025-07-26T19:01:33.820110', 'source': 'agent', 'message': 'Running command: \npwd && ls /workspace/Project-MONAI__MONAI__0.8\n', 'action': 'run', 'tool_call_metadata': {'funct...
+      Step 1: {'id': 6, 'timestamp': '2025-07-26T19:01:34.560524', 'source': 'agent', 'message': 'Command `pwd && ls /workspace/Project-MONAI__MONAI__0.8` executed with exit code 0.', 'cause': 5, 'observation': 'ru...
+      Step 2: {'id': 7, 'timestamp': '2025-07-26T19:01:37.154810', 'source': 'agent', 'message': 'Running command: \ngrep -r "CopyItemsd" /workspace/Project-MONAI__MONAI__0.8/monai/transforms/utility\n', 'action': ...
+
+  Found extremely long example 6951:
+    Token length: 124,547
+    Trajectory steps: 7
+    Instance ID: Project-MONAI__MONAI-3785
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 7, 'timestamp': '2025-07-26T19:01:37.154810', 'source': 'agent', 'message': 'Running command: \ngrep -r "CopyItemsd" /workspace/Project-MONAI__MONAI__0.8/monai/transforms/utility\n', 'action': ...
+      Step 1: {'id': 8, 'timestamp': '2025-07-26T19:01:37.815412', 'source': 'agent', 'message': 'Command `grep -r "CopyItemsd" /workspace/Project-MONAI__MONAI__0.8/monai/transforms/utility` executed with exit code...
+      Step 2: {'id': 9, 'timestamp': '2025-07-26T19:01:40.138094', 'source': 'agent', 'message': 'Reading file: /workspace/Project-MONAI__MONAI__0.8/monai/transforms/utility/dictionary.py', 'action': 'read', 'tool_...
+
+  Found extremely long example 8479:
+    Token length: 126,407
+    Trajectory steps: 8
+    Instance ID: pandas-dev__pandas-57548
+    Model: claude-sonnet-4
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 195, 'timestamp': '2025-07-26T01:22:22.682888', 'source': 'agent', 'message': 'Running command: cd /workspace/pandas-dev__pandas__3.0 && grep -A30 -B5 "Use corrected conversion logic" build/pan...
+      Step 1: {'id': 196, 'timestamp': '2025-07-26T01:22:23.418736', 'source': 'agent', 'message': 'Command `cd /workspace/pandas-dev__pandas__3.0 && grep -A30 -B5 "Use corrected conversion logic" build/pandas/_lib...
+      Step 2: {'id': 197, 'timestamp': '2025-07-26T01:22:26.434120', 'source': 'agent', 'message': 'Running command: cd /workspace/pandas-dev__pandas__3.0 && find build -name "*tslib*" -type f', 'action': 'run', 't...
+
+  Found extremely long example 8480:
+    Token length: 126,183
+    Trajectory steps: 8
+    Instance ID: pandas-dev__pandas-57548
+    Model: claude-sonnet-4
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 197, 'timestamp': '2025-07-26T01:22:26.434120', 'source': 'agent', 'message': 'Running command: cd /workspace/pandas-dev__pandas__3.0 && find build -name "*tslib*" -type f', 'action': 'run', 't...
+      Step 1: {'id': 198, 'timestamp': '2025-07-26T01:22:27.093906', 'source': 'agent', 'message': 'Command `cd /workspace/pandas-dev__pandas__3.0 && find build -name "*tslib*" -type f` executed with exit code 0.',...
+      Step 2: {'id': 199, 'timestamp': '2025-07-26T01:22:30.140425', 'source': 'agent', 'message': 'Running command: cd /workspace/pandas-dev__pandas__3.0 && grep -A30 -B5 "Use corrected conversion logic" build/pan...
+
+  Found extremely long example 11560:
+    Token length: 279,761
+    Trajectory steps: 8
+    Instance ID: Project-MONAI__MONAI-6895
+    Model: claude-3-5-haiku
+    Success: True
+    First 3 trajectory steps:
+      Step 0: {'id': 5, 'timestamp': '2025-07-26T20:06:23.516314', 'source': 'agent', 'message': 'Running command: cd /workspace/Project-MONAI__MONAI__1.2 && cat README.md', 'action': 'run', 'tool_call_metadata': {...
+      Step 1: {'id': 6, 'timestamp': '2025-07-26T20:06:24.254751', 'source': 'agent', 'message': 'Command `cd /workspace/Project-MONAI__MONAI__1.2 && cat README.md` executed with exit code 0.', 'cause': 5, 'observa...
+      Step 2: {'id': 7, 'timestamp': '2025-07-26T20:06:44.276254', 'source': 'agent', 'message': 'Running command: cd /workspace/Project-MONAI__MONAI__1.2 && ls', 'action': 'run', 'tool_call_metadata': {'function_n...
+
+  Found extremely long example 11561:
+    Token length: 280,085
+    Trajectory steps: 8
+    Instance ID: Project-MONAI__MONAI-6895
+    Model: claude-3-5-haiku
+    Success: True
+    First 3 trajectory steps:
+      Step 0: {'id': 7, 'timestamp': '2025-07-26T20:06:44.276254', 'source': 'agent', 'message': 'Running command: cd /workspace/Project-MONAI__MONAI__1.2 && ls', 'action': 'run', 'tool_call_metadata': {'function_n...
+      Step 1: {'id': 8, 'timestamp': '2025-07-26T20:06:45.011362', 'source': 'agent', 'message': 'Command `cd /workspace/Project-MONAI__MONAI__1.2 && ls` executed with exit code 0.', 'cause': 7, 'observation': 'run...
+      Step 2: {'id': 9, 'timestamp': '2025-07-26T20:07:09.366776', 'source': 'agent', 'message': 'Reading file: /workspace/Project-MONAI__MONAI__1.2/runtests.sh', 'action': 'read', 'tool_call_metadata': {'function_...
+
+  Found extremely long example 11562:
+    Token length: 498,245
+    Trajectory steps: 8
+    Instance ID: Project-MONAI__MONAI-6895
+    Model: claude-3-5-haiku
+    Success: True
+    First 3 trajectory steps:
+      Step 0: {'id': 9, 'timestamp': '2025-07-26T20:07:09.366776', 'source': 'agent', 'message': 'Reading file: /workspace/Project-MONAI__MONAI__1.2/runtests.sh', 'action': 'read', 'tool_call_metadata': {'function_...
+      Step 1: {'id': 10, 'timestamp': '2025-07-26T20:07:09.538990', 'source': 'agent', 'message': 'I read the file /workspace/Project-MONAI__MONAI__1.2/runtests.sh.', 'cause': 9, 'observation': 'read', 'tool_call_m...
+      Step 2: {'id': 11, 'timestamp': '2025-07-26T20:07:57.126530', 'source': 'agent', 'message': 'Running command: cd /workspace/Project-MONAI__MONAI__1.2 && ./runtests.sh -u', 'action': 'run', 'tool_call_metadata...
+
+  Found extremely long example 11563:
+    Token length: 490,502
+    Trajectory steps: 8
+    Instance ID: Project-MONAI__MONAI-6895
+    Model: claude-3-5-haiku
+    Success: True
+    First 3 trajectory steps:
+      Step 0: {'id': 11, 'timestamp': '2025-07-26T20:07:57.126530', 'source': 'agent', 'message': 'Running command: cd /workspace/Project-MONAI__MONAI__1.2 && ./runtests.sh -u', 'action': 'run', 'tool_call_metadata...
+      Step 1: {'id': 12, 'timestamp': '2025-07-26T20:12:57.923900', 'source': 'agent', 'message': 'Command `cd /workspace/Project-MONAI__MONAI__1.2 && ./runtests.sh -u` executed with exit code -1.', 'cause': 11, 'o...
+      Step 2: {'id': 13, 'timestamp': '2025-07-26T20:13:03.401810', 'source': 'agent', 'message': 'Running command: cd /workspace/Project-MONAI__MONAI__1.2 && find . -name "dist.py"', 'action': 'run', 'tool_call_me...
+
+  Found extremely long example 11564:
+    Token length: 229,346
+    Trajectory steps: 8
+    Instance ID: Project-MONAI__MONAI-6895
+    Model: claude-3-5-haiku
+    Success: True
+    First 3 trajectory steps:
+      Step 0: {'id': 13, 'timestamp': '2025-07-26T20:13:03.401810', 'source': 'agent', 'message': 'Running command: cd /workspace/Project-MONAI__MONAI__1.2 && find . -name "dist.py"', 'action': 'run', 'tool_call_me...
+      Step 1: {'id': 14, 'timestamp': '2025-07-26T20:13:03.561409', 'source': 'agent', 'message': 'Command `cd /workspace/Project-MONAI__MONAI__1.2 && find . -name "dist.py"` executed with exit code -1.', 'cause': ...
+      Step 2: {'id': 15, 'timestamp': '2025-07-26T20:14:45.329525', 'source': 'agent', 'message': 'Running command: C-c', 'action': 'run', 'tool_call_metadata': {'function_name': 'execute_bash', 'tool_call_id': 'to...
+
+  Found extremely long example 11565:
+    Token length: 227,256
+    Trajectory steps: 8
+    Instance ID: Project-MONAI__MONAI-6895
+    Model: claude-3-5-haiku
+    Success: True
+    First 3 trajectory steps:
+      Step 0: {'id': 15, 'timestamp': '2025-07-26T20:14:45.329525', 'source': 'agent', 'message': 'Running command: C-c', 'action': 'run', 'tool_call_metadata': {'function_name': 'execute_bash', 'tool_call_id': 'to...
+      Step 1: {'id': 16, 'timestamp': '2025-07-26T20:14:48.672411', 'source': 'agent', 'message': 'Command `C-c` executed with exit code 1.', 'cause': 15, 'observation': 'run', 'tool_call_metadata': {'function_name...
+      Step 2: {'id': 17, 'timestamp': '2025-07-26T20:15:10.215756', 'source': 'agent', 'message': 'Running command: cd /workspace/Project-MONAI__MONAI__1.2 && grep -r "class RankFilter" .', 'action': 'run', 'tool_c...
+
+  Found extremely long example 11569:
+    Token length: 453,389
+    Trajectory steps: 8
+    Instance ID: Project-MONAI__MONAI-6895
+    Model: claude-3-5-haiku
+    Success: True
+    First 3 trajectory steps:
+      Step 0: {'id': 23, 'timestamp': '2025-07-26T20:17:09.766835', 'source': 'agent', 'message': 'Running command: cd /workspace/Project-MONAI__MONAI__1.2 && python reproduce_rank_filter_issue.py', 'action': 'run'...
+      Step 1: {'id': 24, 'timestamp': '2025-07-26T20:17:15.537102', 'source': 'agent', 'message': 'Command `cd /workspace/Project-MONAI__MONAI__1.2 && python reproduce_rank_filter_issue.py` executed with exit code ...
+      Step 2: {'id': 25, 'timestamp': '2025-07-26T20:17:51.909842', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_016JzPzey...
+
+  Found extremely long example 11570:
+    Token length: 1,066,998
+    Trajectory steps: 11
+    Instance ID: Project-MONAI__MONAI-6895
+    Model: claude-3-5-haiku
+    Success: True
+    First 3 trajectory steps:
+      Step 0: {'id': 25, 'timestamp': '2025-07-26T20:17:51.909842', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_016JzPzey...
+      Step 1: {'id': 26, 'timestamp': '2025-07-26T20:17:52.045046', 'source': 'agent', 'message': 'I edited the file /workspace/Project-MONAI__MONAI__1.2/monai/utils/dist.py.', 'cause': 25, 'observation': 'edit', '...
+      Step 2: {'id': 27, 'timestamp': '2025-07-26T20:18:05.465449', 'source': 'agent', 'message': 'Running command: cd /workspace/Project-MONAI__MONAI__1.2 && python reproduce_rank_filter_issue.py', 'action': 'run'...
+
+  Found extremely long example 11571:
+    Token length: 1,703,044
+    Trajectory steps: 11
+    Instance ID: Project-MONAI__MONAI-6895
+    Model: claude-3-5-haiku
+    Success: True
+    First 3 trajectory steps:
+      Step 0: {'id': 27, 'timestamp': '2025-07-26T20:18:05.465449', 'source': 'agent', 'message': 'Running command: cd /workspace/Project-MONAI__MONAI__1.2 && python reproduce_rank_filter_issue.py', 'action': 'run'...
+      Step 1: {'id': 28, 'timestamp': '2025-07-26T20:18:11.247647', 'source': 'agent', 'message': 'Command `cd /workspace/Project-MONAI__MONAI__1.2 && python reproduce_rank_filter_issue.py` executed with exit code ...
+      Step 2: {'id': 29, 'timestamp': '2025-07-26T20:18:37.062910', 'source': 'agent', 'message': 'Running command: cd /workspace/Project-MONAI__MONAI__1.2 && ./runtests.sh -u', 'action': 'run', 'tool_call_metadata...
+
+  Found extremely long example 11572:
+    Token length: 1,703,571
+    Trajectory steps: 11
+    Instance ID: Project-MONAI__MONAI-6895
+    Model: claude-3-5-haiku
+    Success: True
+    First 3 trajectory steps:
+      Step 0: {'id': 29, 'timestamp': '2025-07-26T20:18:37.062910', 'source': 'agent', 'message': 'Running command: cd /workspace/Project-MONAI__MONAI__1.2 && ./runtests.sh -u', 'action': 'run', 'tool_call_metadata...
+      Step 1: {'id': 30, 'timestamp': '2025-07-26T20:23:37.672212', 'source': 'agent', 'message': 'Command `cd /workspace/Project-MONAI__MONAI__1.2 && ./runtests.sh -u` executed with exit code -1.', 'cause': 29, 'o...
+      Step 2: {'id': 31, 'timestamp': '2025-07-26T20:25:42.955728', 'source': 'agent', 'message': 'Phase 8. FINAL REVIEW\nI\'ll summarize the changes and reasoning:\n\n1. Problem: In a single GPU environment, the `...
+
+  Found extremely long example 11573:
+    Token length: 1,259,157
+    Trajectory steps: 11
+    Instance ID: Project-MONAI__MONAI-6895
+    Model: claude-3-5-haiku
+    Success: True
+    First 3 trajectory steps:
+      Step 0: {'id': 31, 'timestamp': '2025-07-26T20:25:42.955728', 'source': 'agent', 'message': 'Phase 8. FINAL REVIEW\nI\'ll summarize the changes and reasoning:\n\n1. Problem: In a single GPU environment, the `...
+      Step 1: {'id': 33, 'timestamp': '2025-07-26T20:25:42.958002', 'source': 'user', 'message': 'Please continue working on the task on whatever approach you think is suitable.\nIf you think you have solved the ta...
+      Step 2: {'id': 34, 'timestamp': '2025-07-26T20:25:42.958661', 'source': 'user', 'message': 'Retrieving content for: Please continue working on the task on whatever ap', 'action': 'recall', 'args': {'recall_ty...
+
+  Found extremely long example 11574:
+    Token length: 645,093
+    Trajectory steps: 7
+    Instance ID: Project-MONAI__MONAI-6895
+    Model: claude-3-5-haiku
+    Success: True
+    First 3 trajectory steps:
+      Step 0: {'id': 39, 'timestamp': '2025-07-26T20:26:21.296723', 'source': 'agent', 'message': 'Running command: C-c', 'action': 'run', 'tool_call_metadata': {'function_name': 'execute_bash', 'tool_call_id': 'to...
+      Step 1: {'id': 40, 'timestamp': '2025-07-26T20:26:24.683084', 'source': 'agent', 'message': 'Command `C-c` executed with exit code 1.', 'cause': 39, 'observation': 'run', 'tool_call_metadata': {'function_name...
+      Step 2: {'id': 41, 'timestamp': '2025-07-26T20:27:02.570575', 'source': 'agent', 'message': 'Running command: cd /workspace/Project-MONAI__MONAI__1.2 && git config --global user.name "openhands" && git config...
+
+  Found extremely long example 11622:
+    Token length: 698,924
+    Trajectory steps: 8
+    Instance ID: Project-MONAI__MONAI-6895
+    Model: deepseek-v3
+    Success: True
+    First 3 trajectory steps:
+      Step 0: {'id': 9, 'timestamp': '2025-07-26T19:05:03.496528', 'source': 'agent', 'message': 'Reading file: /workspace/Project-MONAI__MONAI__1.2/README.md', 'action': 'read', 'tool_call_metadata': {'function_na...
+      Step 1: {'id': 10, 'timestamp': '2025-07-26T19:05:03.547140', 'source': 'agent', 'message': 'I read the file /workspace/Project-MONAI__MONAI__1.2/README.md.', 'cause': 9, 'observation': 'read', 'tool_call_met...
+      Step 2: {'id': 11, 'timestamp': '2025-07-26T19:05:05.497461', 'source': 'agent', 'message': 'Reading file: /workspace/Project-MONAI__MONAI__1.2/runtests.sh', 'action': 'read', 'tool_call_metadata': {'function...
+
+  Found extremely long example 11623:
+    Token length: 697,158
+    Trajectory steps: 8
+    Instance ID: Project-MONAI__MONAI-6895
+    Model: deepseek-v3
+    Success: True
+    First 3 trajectory steps:
+      Step 0: {'id': 11, 'timestamp': '2025-07-26T19:05:05.497461', 'source': 'agent', 'message': 'Reading file: /workspace/Project-MONAI__MONAI__1.2/runtests.sh', 'action': 'read', 'tool_call_metadata': {'function...
+      Step 1: {'id': 12, 'timestamp': '2025-07-26T19:05:05.591548', 'source': 'agent', 'message': 'I read the file /workspace/Project-MONAI__MONAI__1.2/runtests.sh.', 'cause': 11, 'observation': 'read', 'tool_call_...
+      Step 2: {'id': 13, 'timestamp': '2025-07-26T19:05:09.234684', 'source': 'agent', 'message': 'Running command: \ncd /workspace/Project-MONAI__MONAI__1.2 && ./runtests.sh --unittests\n', 'action': 'run', 'tool_...
+
+  Found extremely long example 11624:
+    Token length: 689,545
+    Trajectory steps: 8
+    Instance ID: Project-MONAI__MONAI-6895
+    Model: deepseek-v3
+    Success: True
+    First 3 trajectory steps:
+      Step 0: {'id': 13, 'timestamp': '2025-07-26T19:05:09.234684', 'source': 'agent', 'message': 'Running command: \ncd /workspace/Project-MONAI__MONAI__1.2 && ./runtests.sh --unittests\n', 'action': 'run', 'tool_...
+      Step 1: {'id': 14, 'timestamp': '2025-07-26T19:10:13.643461', 'source': 'agent', 'message': 'Command `cd /workspace/Project-MONAI__MONAI__1.2 && ./runtests.sh --unittests` executed with exit code -1.', 'cause...
+      Step 2: {'id': 15, 'timestamp': '2025-07-26T19:10:15.143619', 'source': 'agent', 'message': 'Running command: ', 'action': 'run', 'tool_call_metadata': {'function_name': 'execute_bash', 'tool_call_id': 'toolu...
+
+  Found extremely long example 11625:
+    Token length: 686,637
+    Trajectory steps: 8
+    Instance ID: Project-MONAI__MONAI-6895
+    Model: deepseek-v3
+    Success: True
+    First 3 trajectory steps:
+      Step 0: {'id': 15, 'timestamp': '2025-07-26T19:10:15.143619', 'source': 'agent', 'message': 'Running command: ', 'action': 'run', 'tool_call_metadata': {'function_name': 'execute_bash', 'tool_call_id': 'toolu...
+      Step 1: {'id': 16, 'timestamp': '2025-07-26T19:15:16.008539', 'source': 'agent', 'message': 'Command `` executed with exit code -1.', 'cause': 15, 'observation': 'run', 'tool_call_metadata': {'function_name':...
+      Step 2: {'id': 17, 'timestamp': '2025-07-26T19:15:18.903762', 'source': 'agent', 'message': 'Running command: ps aux | grep python', 'action': 'run', 'tool_call_metadata': {'function_name': 'execute_bash', 't...
+
+  Found extremely long example 11733:
+    Token length: 219,332
+    Trajectory steps: 8
+    Instance ID: getmoto__moto-6410
+    Model: deepseek-v3
+    Success: True
+    First 3 trajectory steps:
+      Step 0: {'id': 33, 'timestamp': '2025-07-26T20:36:33.058799', 'source': 'agent', 'message': "Running command: \n\naws --endpoint-url http://localhost:5000/ s3 mb s3://test-bucket && \\\necho -n $'\\x01' | aws...
+      Step 1: {'id': 34, 'timestamp': '2025-07-26T20:36:33.719524', 'source': 'agent', 'message': "Command `aws --endpoint-url http://localhost:5000/ s3 mb s3://test-bucket && \\\necho -n $'\\x01' | aws --endpoint-...
+      Step 2: {'id': 35, 'timestamp': '2025-07-26T20:36:36.266720', 'source': 'agent', 'message': 'Running command: \n\npip install awscli\n\n', 'action': 'run', 'tool_call_metadata': {'function_name': 'execute_bas...
+
+  Found extremely long example 11734:
+    Token length: 219,180
+    Trajectory steps: 8
+    Instance ID: getmoto__moto-6410
+    Model: deepseek-v3
+    Success: True
+    First 3 trajectory steps:
+      Step 0: {'id': 35, 'timestamp': '2025-07-26T20:36:36.266720', 'source': 'agent', 'message': 'Running command: \n\npip install awscli\n\n', 'action': 'run', 'tool_call_metadata': {'function_name': 'execute_bas...
+      Step 1: {'id': 36, 'timestamp': '2025-07-26T20:36:41.453120', 'source': 'agent', 'message': 'Command `pip install awscli` executed with exit code 0.', 'cause': 35, 'observation': 'run', 'tool_call_metadata': ...
+      Step 2: {'id': 37, 'timestamp': '2025-07-26T20:36:45.175802', 'source': 'agent', 'message': "Running command: \n\n\naws --endpoint-url http://localhost:5000/ s3 mb s3://test-bucket && \\\necho -n $'\\x01' | a...
+
+  Found extremely long example 11735:
+    Token length: 216,904
+    Trajectory steps: 7
+    Instance ID: getmoto__moto-6410
+    Model: deepseek-v3
+    Success: True
+    First 3 trajectory steps:
+      Step 0: {'id': 37, 'timestamp': '2025-07-26T20:36:45.175802', 'source': 'agent', 'message': "Running command: \n\n\naws --endpoint-url http://localhost:5000/ s3 mb s3://test-bucket && \\\necho -n $'\\x01' | a...
+      Step 1: {'id': 38, 'timestamp': '2025-07-26T20:36:45.836292', 'source': 'agent', 'message': "Command `aws --endpoint-url http://localhost:5000/ s3 mb s3://test-bucket && \\\necho -n $'\\x01' | aws --endpoint-...
+      Step 2: {'id': 39, 'timestamp': '2025-07-26T20:36:50.207121', 'source': 'agent', 'message': "Running command: \n\naws configure set aws_access_key_id test && \\\naws configure set aws_secret_access_key test &...
+
+  Found extremely long example 13384:
+    Token length: 389,994
+    Trajectory steps: 8
+    Instance ID: iterative__dvc-6811
+    Model: claude-3-5-haiku
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 9, 'timestamp': '2025-07-26T18:38:45.910415', 'source': 'agent', 'message': 'Running command: cd /workspace/iterative__dvc__2.8 && ls tests', 'action': 'run', 'tool_call_metadata': {'function_n...
+      Step 1: {'id': 10, 'timestamp': '2025-07-26T18:38:46.575150', 'source': 'agent', 'message': 'Command `cd /workspace/iterative__dvc__2.8 && ls tests` executed with exit code 0.', 'cause': 9, 'observation': 'ru...
+      Step 2: {'id': 11, 'timestamp': '2025-07-26T18:38:48.553081', 'source': 'agent', 'message': 'Running command: cd /workspace/iterative__dvc__2.8 && python3 -m pytest', 'action': 'run', 'tool_call_metadata': {'...
+
+  Found extremely long example 13385:
+    Token length: 391,599
+    Trajectory steps: 8
+    Instance ID: iterative__dvc-6811
+    Model: claude-3-5-haiku
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 11, 'timestamp': '2025-07-26T18:38:48.553081', 'source': 'agent', 'message': 'Running command: cd /workspace/iterative__dvc__2.8 && python3 -m pytest', 'action': 'run', 'tool_call_metadata': {'...
+      Step 1: {'id': 12, 'timestamp': '2025-07-26T18:43:49.038271', 'source': 'agent', 'message': 'Command `cd /workspace/iterative__dvc__2.8 && python3 -m pytest` executed with exit code -1.', 'cause': 11, 'observ...
+      Step 2: {'id': 13, 'timestamp': '2025-07-26T18:43:52.867408', 'source': 'agent', 'message': 'Running command: cd /workspace/iterative__dvc__2.8 && grep -rn "def ls(" dvc', 'action': 'run', 'tool_call_metadata...
+
+  Found extremely long example 13386:
+    Token length: 390,023
+    Trajectory steps: 8
+    Instance ID: iterative__dvc-6811
+    Model: claude-3-5-haiku
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 13, 'timestamp': '2025-07-26T18:43:52.867408', 'source': 'agent', 'message': 'Running command: cd /workspace/iterative__dvc__2.8 && grep -rn "def ls(" dvc', 'action': 'run', 'tool_call_metadata...
+      Step 1: {'id': 14, 'timestamp': '2025-07-26T18:43:52.916795', 'source': 'agent', 'message': 'Command `cd /workspace/iterative__dvc__2.8 && grep -rn "def ls(" dvc` executed with exit code -1.', 'cause': 13, 'o...
+      Step 2: {'id': 15, 'timestamp': '2025-07-26T18:43:55.190875', 'source': 'agent', 'message': 'Running command: C-c', 'action': 'run', 'tool_call_metadata': {'function_name': 'execute_bash', 'tool_call_id': 'to...
+
+  Found extremely long example 13387:
+    Token length: 390,686
+    Trajectory steps: 8
+    Instance ID: iterative__dvc-6811
+    Model: claude-3-5-haiku
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 15, 'timestamp': '2025-07-26T18:43:55.190875', 'source': 'agent', 'message': 'Running command: C-c', 'action': 'run', 'tool_call_metadata': {'function_name': 'execute_bash', 'tool_call_id': 'to...
+      Step 1: {'id': 16, 'timestamp': '2025-07-26T18:44:01.160879', 'source': 'agent', 'message': 'Command `C-c` executed with exit code 2.', 'cause': 15, 'observation': 'run', 'tool_call_metadata': {'function_name...
+      Step 2: {'id': 17, 'timestamp': '2025-07-26T18:44:04.754080', 'source': 'agent', 'message': 'Running command: cd /workspace/iterative__dvc__2.8 && find . -type f | grep -E "list|ls"', 'action': 'run', 'tool_c...
+
+  Found extremely long example 14269:
+    Token length: 199,988
+    Trajectory steps: 8
+    Instance ID: conan-io__conan-15109
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 7, 'timestamp': '2025-07-26T21:07:25.246387', 'source': 'agent', 'message': 'Running command: \ncd /workspace/conan-io__conan__2.0 && ls -l && grep -r "test" . | grep -i "run"\n', 'action': 'ru...
+      Step 1: {'id': 8, 'timestamp': '2025-07-26T21:07:26.101079', 'source': 'agent', 'message': 'Command `cd /workspace/conan-io__conan__2.0 && ls -l && grep -r "test" . | grep -i "run"` executed with exit code 0....
+      Step 2: {'id': 9, 'timestamp': '2025-07-26T21:07:29.876332', 'source': 'agent', 'message': 'Running command: \ncat README.md | grep -i "run test" -A 5\n', 'action': 'run', 'tool_call_metadata': {'function_nam...
+
+  Found extremely long example 14270:
+    Token length: 174,627
+    Trajectory steps: 8
+    Instance ID: conan-io__conan-15109
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 9, 'timestamp': '2025-07-26T21:07:29.876332', 'source': 'agent', 'message': 'Running command: \ncat README.md | grep -i "run test" -A 5\n', 'action': 'run', 'tool_call_metadata': {'function_nam...
+      Step 1: {'id': 10, 'timestamp': '2025-07-26T21:07:30.536037', 'source': 'agent', 'message': 'Command `cat README.md | grep -i "run test" -A 5` executed with exit code 0.', 'cause': 9, 'observation': 'run', 't...
+      Step 2: {'id': 11, 'timestamp': '2025-07-26T21:07:33.794248', 'source': 'agent', 'message': 'Running command: \n\npython -m pytest conans/test/ -v\n\n', 'action': 'run', 'tool_call_metadata': {'function_name'...
+
+  Found extremely long example 14271:
+    Token length: 174,466
+    Trajectory steps: 8
+    Instance ID: conan-io__conan-15109
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 11, 'timestamp': '2025-07-26T21:07:33.794248', 'source': 'agent', 'message': 'Running command: \n\npython -m pytest conans/test/ -v\n\n', 'action': 'run', 'tool_call_metadata': {'function_name'...
+      Step 1: {'id': 12, 'timestamp': '2025-07-26T21:12:38.195066', 'source': 'agent', 'message': 'Command `python -m pytest conans/test/ -v` executed with exit code -1.', 'cause': 11, 'observation': 'run', 'tool_c...
+      Step 2: {'id': 13, 'timestamp': '2025-07-26T21:12:41.340400', 'source': 'agent', 'message': 'Running command: ', 'action': 'run', 'tool_call_metadata': {'function_name': 'execute_bash', 'tool_call_id': 'toolu...
+
+  Found extremely long example 14272:
+    Token length: 243,555
+    Trajectory steps: 8
+    Instance ID: conan-io__conan-15109
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 13, 'timestamp': '2025-07-26T21:12:41.340400', 'source': 'agent', 'message': 'Running command: ', 'action': 'run', 'tool_call_metadata': {'function_name': 'execute_bash', 'tool_call_id': 'toolu...
+      Step 1: {'id': 14, 'timestamp': '2025-07-26T21:14:33.099203', 'source': 'agent', 'message': 'Command `` executed with exit code 1.', 'cause': 13, 'observation': 'run', 'tool_call_metadata': {'function_name': ...
+      Step 2: {'id': 15, 'timestamp': '2025-07-26T21:14:36.508786', 'source': 'agent', 'message': 'Running command: \ncmake --version\n', 'action': 'run', 'tool_call_metadata': {'function_name': 'execute_bash', 'to...
+
+  Found extremely long example 14280:
+    Token length: 265,108
+    Trajectory steps: 8
+    Instance ID: conan-io__conan-15109
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 29, 'timestamp': '2025-07-26T21:15:10.585188', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_13', 'mod...
+      Step 1: {'id': 30, 'timestamp': '2025-07-26T21:15:10.724576', 'source': 'agent', 'message': 'I edited the file /workspace/conan-io__conan__2.0/conans/test/conftest.py.', 'cause': 29, 'observation': 'edit', 't...
+      Step 2: {'id': 31, 'timestamp': '2025-07-26T21:15:13.178006', 'source': 'agent', 'message': 'Running command: \n\npython -m pytest conans/test/ -v\n\n', 'action': 'run', 'tool_call_metadata': {'function_name'...
+
+  Found extremely long example 14281:
+    Token length: 262,293
+    Trajectory steps: 8
+    Instance ID: conan-io__conan-15109
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 31, 'timestamp': '2025-07-26T21:15:13.178006', 'source': 'agent', 'message': 'Running command: \n\npython -m pytest conans/test/ -v\n\n', 'action': 'run', 'tool_call_metadata': {'function_name'...
+      Step 1: {'id': 32, 'timestamp': '2025-07-26T21:20:13.747309', 'source': 'agent', 'message': 'Command `python -m pytest conans/test/ -v` executed with exit code -1.', 'cause': 31, 'observation': 'run', 'tool_c...
+      Step 2: {'id': 33, 'timestamp': '2025-07-26T21:20:21.175569', 'source': 'agent', 'message': 'Running command: \n\n\ngrep -r "core.sources:download_urls" conans/test/\n\n\n', 'action': 'run', 'tool_call_metada...
+
+  Found extremely long example 14282:
+    Token length: 180,792
+    Trajectory steps: 8
+    Instance ID: conan-io__conan-15109
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 33, 'timestamp': '2025-07-26T21:20:21.175569', 'source': 'agent', 'message': 'Running command: \n\n\ngrep -r "core.sources:download_urls" conans/test/\n\n\n', 'action': 'run', 'tool_call_metada...
+      Step 1: {'id': 34, 'timestamp': '2025-07-26T21:20:21.433637', 'source': 'agent', 'message': 'Command `grep -r "core.sources:download_urls" conans/test/` executed with exit code -1.', 'cause': 33, 'observation...
+      Step 2: {'id': 35, 'timestamp': '2025-07-26T21:20:27.195342', 'source': 'agent', 'message': 'Running command: ', 'action': 'run', 'tool_call_metadata': {'function_name': 'execute_bash', 'tool_call_id': 'toolu...
+
+  Found extremely long example 14283:
+    Token length: 248,043
+    Trajectory steps: 8
+    Instance ID: conan-io__conan-15109
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 35, 'timestamp': '2025-07-26T21:20:27.195342', 'source': 'agent', 'message': 'Running command: ', 'action': 'run', 'tool_call_metadata': {'function_name': 'execute_bash', 'tool_call_id': 'toolu...
+      Step 1: {'id': 36, 'timestamp': '2025-07-26T21:22:56.322448', 'source': 'agent', 'message': 'Command `` executed with exit code 1.', 'cause': 35, 'observation': 'run', 'tool_call_metadata': {'function_name': ...
+      Step 2: {'id': 37, 'timestamp': '2025-07-26T21:22:59.039477', 'source': 'agent', 'message': 'Running command: \n\ncmake --version\n\n', 'action': 'run', 'tool_call_metadata': {'function_name': 'execute_bash',...
+
+  Found extremely long example 14296:
+    Token length: 105,963
+    Trajectory steps: 8
+    Instance ID: conan-io__conan-15109
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 61, 'timestamp': '2025-07-26T21:24:01.860157', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_29', 'mod...
+      Step 1: {'id': 62, 'timestamp': '2025-07-26T21:24:01.902700', 'source': 'agent', 'message': 'I edited the file /workspace/conan-io__conan__2.0/conans/test/conftest.py.', 'cause': 61, 'observation': 'edit', 't...
+      Step 2: {'id': 63, 'timestamp': '2025-07-26T21:24:08.057072', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_30', 'mod...
+
+  Found extremely long example 14297:
+    Token length: 263,532
+    Trajectory steps: 8
+    Instance ID: conan-io__conan-15109
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 63, 'timestamp': '2025-07-26T21:24:08.057072', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_30', 'mod...
+      Step 1: {'id': 64, 'timestamp': '2025-07-26T21:24:08.177055', 'source': 'agent', 'message': 'I edited the file /workspace/conan-io__conan__2.0/conans/test/conftest.py.', 'cause': 63, 'observation': 'edit', 't...
+      Step 2: {'id': 65, 'timestamp': '2025-07-26T21:24:11.307458', 'source': 'agent', 'message': 'Running command: \n\n\npython -m pytest conans/test/ -v\n\n\n', 'action': 'run', 'tool_call_metadata': {'function_n...
+
+  Found extremely long example 14298:
+    Token length: 262,310
+    Trajectory steps: 8
+    Instance ID: conan-io__conan-15109
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 65, 'timestamp': '2025-07-26T21:24:11.307458', 'source': 'agent', 'message': 'Running command: \n\n\npython -m pytest conans/test/ -v\n\n\n', 'action': 'run', 'tool_call_metadata': {'function_n...
+      Step 1: {'id': 66, 'timestamp': '2025-07-26T21:29:12.388341', 'source': 'agent', 'message': 'Command `python -m pytest conans/test/ -v` executed with exit code -1.', 'cause': 65, 'observation': 'run', 'tool_c...
+      Step 2: {'id': 67, 'timestamp': '2025-07-26T21:30:07.400710', 'source': 'agent', 'message': 'Running command: \n\n\n\ngrep -r "core.sources:download_urls" conans/test/\n\n\n\n', 'action': 'run', 'tool_call_me...
+
+  Found extremely long example 14299:
+    Token length: 174,124
+    Trajectory steps: 8
+    Instance ID: conan-io__conan-15109
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 67, 'timestamp': '2025-07-26T21:30:07.400710', 'source': 'agent', 'message': 'Running command: \n\n\n\ngrep -r "core.sources:download_urls" conans/test/\n\n\n\n', 'action': 'run', 'tool_call_me...
+      Step 1: {'id': 68, 'timestamp': '2025-07-26T21:30:07.931810', 'source': 'agent', 'message': 'Command `grep -r "core.sources:download_urls" conans/test/` executed with exit code -1.', 'cause': 67, 'observation...
+      Step 2: {'id': 69, 'timestamp': '2025-07-26T21:30:10.216232', 'source': 'agent', 'message': 'Running command: ', 'action': 'run', 'tool_call_metadata': {'function_name': 'execute_bash', 'tool_call_id': 'toolu...
+
+  Found extremely long example 14300:
+    Token length: 232,229
+    Trajectory steps: 8
+    Instance ID: conan-io__conan-15109
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 69, 'timestamp': '2025-07-26T21:30:10.216232', 'source': 'agent', 'message': 'Running command: ', 'action': 'run', 'tool_call_metadata': {'function_name': 'execute_bash', 'tool_call_id': 'toolu...
+      Step 1: {'id': 70, 'timestamp': '2025-07-26T21:31:03.770672', 'source': 'agent', 'message': 'Command `` executed with exit code 1.', 'cause': 69, 'observation': 'run', 'tool_call_metadata': {'function_name': ...
+      Step 2: {'id': 71, 'timestamp': '2025-07-26T21:31:07.528824', 'source': 'agent', 'message': 'Running command: \n\n\ncmake --version\n\n\n', 'action': 'run', 'tool_call_metadata': {'function_name': 'execute_ba...
+
+  Found extremely long example 15937:
+    Token length: 143,054
+    Trajectory steps: 8
+    Instance ID: python__mypy-10430
+    Model: claude-3-5-haiku
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 35, 'timestamp': '2025-07-26T21:18:43.935181', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_01FToWBTx...
+      Step 1: {'id': 36, 'timestamp': '2025-07-26T21:18:44.065078', 'source': 'agent', 'message': 'I edited the file /workspace/python__mypy__0.820/mypy/test/testcheck.py.', 'cause': 35, 'observation': 'edit', 'too...
+      Step 2: {'id': 37, 'timestamp': '2025-07-26T21:19:10.700251', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_014usW8Nw...
+
+  Found extremely long example 15938:
+    Token length: 149,665
+    Trajectory steps: 8
+    Instance ID: python__mypy-10430
+    Model: claude-3-5-haiku
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 37, 'timestamp': '2025-07-26T21:19:10.700251', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_014usW8Nw...
+      Step 1: {'id': 38, 'timestamp': '2025-07-26T21:19:10.825801', 'source': 'agent', 'message': 'I edited the file /workspace/python__mypy__0.820/mypy/lookup.py.', 'cause': 37, 'observation': 'edit', 'tool_call_m...
+      Step 2: {'id': 39, 'timestamp': '2025-07-26T21:19:22.600803', 'source': 'agent', 'message': 'Running command: cd /workspace/python__mypy__0.820 && pytest -q mypy/test/testcheck.py::TypeCheckSuite::testIncreme...
+
+  Found extremely long example 15939:
+    Token length: 155,450
+    Trajectory steps: 8
+    Instance ID: python__mypy-10430
+    Model: claude-3-5-haiku
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 39, 'timestamp': '2025-07-26T21:19:22.600803', 'source': 'agent', 'message': 'Running command: cd /workspace/python__mypy__0.820 && pytest -q mypy/test/testcheck.py::TypeCheckSuite::testIncreme...
+      Step 1: {'id': 40, 'timestamp': '2025-07-26T21:19:24.341278', 'source': 'agent', 'message': 'Command `cd /workspace/python__mypy__0.820 && pytest -q mypy/test/testcheck.py::TypeCheckSuite::testIncrementalGetA...
+      Step 2: {'id': 41, 'timestamp': '2025-07-26T21:19:26.958764', 'source': 'agent', 'message': 'Running command: cd /workspace/python__mypy__0.820 && pytest -q mypy', 'action': 'run', 'tool_call_metadata': {'fun...
+
+  Found extremely long example 15940:
+    Token length: 155,284
+    Trajectory steps: 7
+    Instance ID: python__mypy-10430
+    Model: claude-3-5-haiku
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 41, 'timestamp': '2025-07-26T21:19:26.958764', 'source': 'agent', 'message': 'Running command: cd /workspace/python__mypy__0.820 && pytest -q mypy', 'action': 'run', 'tool_call_metadata': {'fun...
+      Step 1: {'id': 42, 'timestamp': '2025-07-26T21:23:37.751564', 'source': 'agent', 'message': 'Command `cd /workspace/python__mypy__0.820 && pytest -q mypy` executed with exit code 1.', 'cause': 41, 'observatio...
+      Step 2: {'id': 43, 'timestamp': '2025-07-26T21:24:15.604904', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_01Q8BXiPz...
+
+  Found extremely long example 16030:
+    Token length: 261,974
+    Trajectory steps: 8
+    Instance ID: python__mypy-10430
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 13, 'timestamp': '2025-07-26T19:00:14.565687', 'source': 'agent', 'message': 'Reading file: /workspace/python__mypy__0.820/mypy/lookup.py', 'action': 'read', 'tool_call_metadata': {'function_na...
+      Step 1: {'id': 14, 'timestamp': '2025-07-26T19:00:14.611508', 'source': 'agent', 'message': 'I read the file /workspace/python__mypy__0.820/mypy/lookup.py.', 'cause': 13, 'observation': 'read', 'tool_call_met...
+      Step 2: {'id': 15, 'timestamp': '2025-07-26T19:00:17.979774', 'source': 'agent', 'message': 'Running command: \n\ncd /workspace/python__mypy__0.820 && grep -r "lookup_fully_qualified" .\n\n', 'action': 'run',...
+
+  Found extremely long example 16031:
+    Token length: 263,145
+    Trajectory steps: 8
+    Instance ID: python__mypy-10430
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 15, 'timestamp': '2025-07-26T19:00:17.979774', 'source': 'agent', 'message': 'Running command: \n\ncd /workspace/python__mypy__0.820 && grep -r "lookup_fully_qualified" .\n\n', 'action': 'run',...
+      Step 1: {'id': 16, 'timestamp': '2025-07-26T19:00:18.639910', 'source': 'agent', 'message': 'Command `cd /workspace/python__mypy__0.820 && grep -r "lookup_fully_qualified" .` executed with exit code 0.', 'cau...
+      Step 2: {'id': 17, 'timestamp': '2025-07-26T19:00:20.902950', 'source': 'agent', 'message': 'Reading file: /workspace/python__mypy__0.820/mypy/fixup.py', 'action': 'read', 'tool_call_metadata': {'function_nam...
+
+  Found extremely long example 16032:
+    Token length: 263,607
+    Trajectory steps: 8
+    Instance ID: python__mypy-10430
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 17, 'timestamp': '2025-07-26T19:00:20.902950', 'source': 'agent', 'message': 'Reading file: /workspace/python__mypy__0.820/mypy/fixup.py', 'action': 'read', 'tool_call_metadata': {'function_nam...
+      Step 1: {'id': 18, 'timestamp': '2025-07-26T19:00:20.985176', 'source': 'agent', 'message': 'I read the file /workspace/python__mypy__0.820/mypy/fixup.py.', 'cause': 17, 'observation': 'read', 'tool_call_meta...
+      Step 2: {'id': 19, 'timestamp': '2025-07-26T19:00:24.712366', 'source': 'agent', 'message': 'Running command: \n\n\ncd /workspace/python__mypy__0.820 && grep -r "__getattr__" .\n\n\n', 'action': 'run', 'tool_...
+
+  Found extremely long example 16033:
+    Token length: 258,869
+    Trajectory steps: 8
+    Instance ID: python__mypy-10430
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 19, 'timestamp': '2025-07-26T19:00:24.712366', 'source': 'agent', 'message': 'Running command: \n\n\ncd /workspace/python__mypy__0.820 && grep -r "__getattr__" .\n\n\n', 'action': 'run', 'tool_...
+      Step 1: {'id': 20, 'timestamp': '2025-07-26T19:00:25.649757', 'source': 'agent', 'message': 'Command `cd /workspace/python__mypy__0.820 && grep -r "__getattr__" .` executed with exit code 0.', 'cause': 19, 'o...
+      Step 2: {'id': 21, 'timestamp': '2025-07-26T19:00:30.379488', 'source': 'agent', 'message': 'Reading file: /workspace/python__mypy__0.820/mypy/semanal.py', 'action': 'read', 'tool_call_metadata': {'function_n...
+
+  Found extremely long example 17390:
+    Token length: 258,306
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: claude-sonnet-4
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 61, 'timestamp': '2025-07-26T01:32:27.865709', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_019wXk3Dr...
+      Step 1: {'id': 62, 'timestamp': '2025-07-26T01:32:27.907755', 'source': 'agent', 'message': 'I edited the file /workspace/python__mypy__0.990/reproduce_issue.py.', 'cause': 61, 'observation': 'edit', 'tool_ca...
+      Step 2: {'id': 63, 'timestamp': '2025-07-26T01:32:30.870436', 'source': 'agent', 'message': 'Running command: cd /workspace/python__mypy__0.990 && python -m mypy reproduce_issue.py --enable-recursive-aliases ...
+
+  Found extremely long example 17391:
+    Token length: 259,153
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: claude-sonnet-4
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 63, 'timestamp': '2025-07-26T01:32:30.870436', 'source': 'agent', 'message': 'Running command: cd /workspace/python__mypy__0.990 && python -m mypy reproduce_issue.py --enable-recursive-aliases ...
+      Step 1: {'id': 64, 'timestamp': '2025-07-26T01:32:31.530513', 'source': 'agent', 'message': 'Command `cd /workspace/python__mypy__0.990 && python -m mypy reproduce_issue.py --enable-recursive-aliases --show-t...
+      Step 2: {'id': 65, 'timestamp': '2025-07-26T01:32:34.928116', 'source': 'agent', 'message': 'Running command: cd /workspace/python__mypy__0.990 && python -m mypy --help | grep -i recursive', 'action': 'run', ...
+
+  Found extremely long example 17392:
+    Token length: 259,151
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: claude-sonnet-4
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 65, 'timestamp': '2025-07-26T01:32:34.928116', 'source': 'agent', 'message': 'Running command: cd /workspace/python__mypy__0.990 && python -m mypy --help | grep -i recursive', 'action': 'run', ...
+      Step 1: {'id': 66, 'timestamp': '2025-07-26T01:32:35.588819', 'source': 'agent', 'message': 'Command `cd /workspace/python__mypy__0.990 && python -m mypy --help | grep -i recursive` executed with exit code 0....
+      Step 2: {'id': 67, 'timestamp': '2025-07-26T01:32:38.617213', 'source': 'agent', 'message': 'Running command: cd /workspace/python__mypy__0.990 && python -m mypy reproduce_issue.py --show-traceback', 'action'...
+
+  Found extremely long example 17393:
+    Token length: 260,541
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: claude-sonnet-4
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 67, 'timestamp': '2025-07-26T01:32:38.617213', 'source': 'agent', 'message': 'Running command: cd /workspace/python__mypy__0.990 && python -m mypy reproduce_issue.py --show-traceback', 'action'...
+      Step 1: {'id': 68, 'timestamp': '2025-07-26T01:32:43.678917', 'source': 'agent', 'message': 'Command `cd /workspace/python__mypy__0.990 && python -m mypy reproduce_issue.py --show-traceback` executed with exi...
+      Step 2: {'id': 69, 'timestamp': '2025-07-26T01:32:54.928548', 'source': 'agent', 'message': "I am thinking...: Perfect! I've successfully reproduced the issue. The problem is a `RecursionError: maximum recurs...
+
+  Found extremely long example 17400:
+    Token length: 260,943
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: claude-sonnet-4
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 81, 'timestamp': '2025-07-26T01:33:32.884371', 'source': 'agent', 'message': 'Running command: cd /workspace/python__mypy__0.990 && grep -n -A30 "class UnrollAliasVisitor" mypy/types.py', 'acti...
+      Step 1: {'id': 82, 'timestamp': '2025-07-26T01:33:33.544408', 'source': 'agent', 'message': 'Command `cd /workspace/python__mypy__0.990 && grep -n -A30 "class UnrollAliasVisitor" mypy/types.py` executed with ...
+      Step 2: {'id': 83, 'timestamp': '2025-07-26T01:33:38.248595', 'source': 'agent', 'message': 'Reading file: /workspace/python__mypy__0.990/mypy/types.py', 'action': 'read', 'tool_call_metadata': {'function_nam...
+
+  Found extremely long example 17401:
+    Token length: 261,181
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: claude-sonnet-4
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 83, 'timestamp': '2025-07-26T01:33:38.248595', 'source': 'agent', 'message': 'Reading file: /workspace/python__mypy__0.990/mypy/types.py', 'action': 'read', 'tool_call_metadata': {'function_nam...
+      Step 1: {'id': 84, 'timestamp': '2025-07-26T01:33:38.290959', 'source': 'agent', 'message': 'I read the file /workspace/python__mypy__0.990/mypy/types.py.', 'cause': 83, 'observation': 'read', 'tool_call_meta...
+      Step 2: {'id': 85, 'timestamp': '2025-07-26T01:33:48.453235', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_019ojbycD...
+
+  Found extremely long example 17402:
+    Token length: 261,546
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: claude-sonnet-4
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 85, 'timestamp': '2025-07-26T01:33:48.453235', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_019ojbycD...
+      Step 1: {'id': 86, 'timestamp': '2025-07-26T01:33:48.584239', 'source': 'agent', 'message': 'I edited the file /workspace/python__mypy__0.990/mypy/types.py.', 'cause': 85, 'observation': 'edit', 'tool_call_me...
+      Step 2: {'id': 87, 'timestamp': '2025-07-26T01:33:51.522796', 'source': 'agent', 'message': 'Running command: cd /workspace/python__mypy__0.990 && python -m mypy reproduce_issue.py --show-traceback', 'action'...
+
+  Found extremely long example 17403:
+    Token length: 259,602
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: claude-sonnet-4
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 87, 'timestamp': '2025-07-26T01:33:51.522796', 'source': 'agent', 'message': 'Running command: cd /workspace/python__mypy__0.990 && python -m mypy reproduce_issue.py --show-traceback', 'action'...
+      Step 1: {'id': 88, 'timestamp': '2025-07-26T01:33:56.581304', 'source': 'agent', 'message': 'Command `cd /workspace/python__mypy__0.990 && python -m mypy reproduce_issue.py --show-traceback` executed with exi...
+      Step 2: {'id': 89, 'timestamp': '2025-07-26T01:34:06.247920', 'source': 'agent', 'message': "I am thinking...: The issue is still happening. Looking at the stack trace, the problem is not in the `InstantiateA...
+
+  Found extremely long example 17405:
+    Token length: 262,039
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: claude-sonnet-4
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 91, 'timestamp': '2025-07-26T01:34:09.763825', 'source': 'agent', 'message': 'Running command: cd /workspace/python__mypy__0.990 && grep -n -A10 "def get_proper_type" mypy/types.py', 'action': ...
+      Step 1: {'id': 92, 'timestamp': '2025-07-26T01:34:10.501677', 'source': 'agent', 'message': 'Command `cd /workspace/python__mypy__0.990 && grep -n -A10 "def get_proper_type" mypy/types.py` executed with exit ...
+      Step 2: {'id': 93, 'timestamp': '2025-07-26T01:34:13.110316', 'source': 'agent', 'message': 'Reading file: /workspace/python__mypy__0.990/mypy/types.py', 'action': 'read', 'tool_call_metadata': {'function_nam...
+
+  Found extremely long example 17406:
+    Token length: 262,213
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: claude-sonnet-4
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 93, 'timestamp': '2025-07-26T01:34:13.110316', 'source': 'agent', 'message': 'Reading file: /workspace/python__mypy__0.990/mypy/types.py', 'action': 'read', 'tool_call_metadata': {'function_nam...
+      Step 1: {'id': 94, 'timestamp': '2025-07-26T01:34:13.153555', 'source': 'agent', 'message': 'I read the file /workspace/python__mypy__0.990/mypy/types.py.', 'cause': 93, 'observation': 'read', 'tool_call_meta...
+      Step 2: {'id': 95, 'timestamp': '2025-07-26T01:34:23.640342', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_018w1n122...
+
+  Found extremely long example 17407:
+    Token length: 262,017
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: claude-sonnet-4
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 95, 'timestamp': '2025-07-26T01:34:23.640342', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_018w1n122...
+      Step 1: {'id': 96, 'timestamp': '2025-07-26T01:34:23.773633', 'source': 'agent', 'message': 'I edited the file /workspace/python__mypy__0.990/mypy/types.py.', 'cause': 95, 'observation': 'edit', 'tool_call_me...
+      Step 2: {'id': 97, 'timestamp': '2025-07-26T01:34:26.480204', 'source': 'agent', 'message': 'Running command: cd /workspace/python__mypy__0.990 && python -m mypy reproduce_issue.py --show-traceback', 'action'...
+
+  Found extremely long example 17408:
+    Token length: 258,998
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: claude-sonnet-4
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 97, 'timestamp': '2025-07-26T01:34:26.480204', 'source': 'agent', 'message': 'Running command: cd /workspace/python__mypy__0.990 && python -m mypy reproduce_issue.py --show-traceback', 'action'...
+      Step 1: {'id': 98, 'timestamp': '2025-07-26T01:34:27.954319', 'source': 'agent', 'message': 'Command `cd /workspace/python__mypy__0.990 && python -m mypy reproduce_issue.py --show-traceback` executed with exi...
+      Step 2: {'id': 99, 'timestamp': '2025-07-26T01:34:37.873584', 'source': 'agent', 'message': "I am thinking...: The issue is still happening. Looking at the stack trace, I can see that the recursion is still h...
+
+  Found extremely long example 17420:
+    Token length: 260,969
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: claude-sonnet-4
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 121, 'timestamp': '2025-07-26T01:35:46.840877', 'source': 'agent', 'message': 'Running command: cd /workspace/python__mypy__0.990 && grep -n -A10 "def trivial_join" mypy/join.py', 'action': 'ru...
+      Step 1: {'id': 122, 'timestamp': '2025-07-26T01:35:47.500284', 'source': 'agent', 'message': 'Command `cd /workspace/python__mypy__0.990 && grep -n -A10 "def trivial_join" mypy/join.py` executed with exit cod...
+      Step 2: {'id': 123, 'timestamp': '2025-07-26T01:35:51.232746', 'source': 'agent', 'message': 'Reading file: /workspace/python__mypy__0.990/mypy/typeops.py', 'action': 'read', 'tool_call_metadata': {'function_...
+
+  Found extremely long example 17421:
+    Token length: 261,331
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: claude-sonnet-4
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 123, 'timestamp': '2025-07-26T01:35:51.232746', 'source': 'agent', 'message': 'Reading file: /workspace/python__mypy__0.990/mypy/typeops.py', 'action': 'read', 'tool_call_metadata': {'function_...
+      Step 1: {'id': 124, 'timestamp': '2025-07-26T01:35:51.279788', 'source': 'agent', 'message': 'I read the file /workspace/python__mypy__0.990/mypy/typeops.py.', 'cause': 123, 'observation': 'read', 'tool_call_...
+      Step 2: {'id': 125, 'timestamp': '2025-07-26T01:35:59.645623', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_01YQVcuw...
+
+  Found extremely long example 17422:
+    Token length: 261,757
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: claude-sonnet-4
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 125, 'timestamp': '2025-07-26T01:35:59.645623', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_01YQVcuw...
+      Step 1: {'id': 126, 'timestamp': '2025-07-26T01:35:59.772756', 'source': 'agent', 'message': 'I edited the file /workspace/python__mypy__0.990/mypy/typeops.py.', 'cause': 125, 'observation': 'edit', 'tool_cal...
+      Step 2: {'id': 127, 'timestamp': '2025-07-26T01:36:05.376262', 'source': 'agent', 'message': 'Running command: cd /workspace/python__mypy__0.990 && python -m mypy reproduce_issue.py --show-traceback', 'action...
+
+  Found extremely long example 17423:
+    Token length: 259,552
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: claude-sonnet-4
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 127, 'timestamp': '2025-07-26T01:36:05.376262', 'source': 'agent', 'message': 'Running command: cd /workspace/python__mypy__0.990 && python -m mypy reproduce_issue.py --show-traceback', 'action...
+      Step 1: {'id': 128, 'timestamp': '2025-07-26T01:36:06.978178', 'source': 'agent', 'message': 'Command `cd /workspace/python__mypy__0.990 && python -m mypy reproduce_issue.py --show-traceback` executed with ex...
+      Step 2: {'id': 129, 'timestamp': '2025-07-26T01:36:21.704572', 'source': 'agent', 'message': 'I am thinking...: The issue is still happening. The problem is that the recursion is not being detected by `is_rec...
+
+  Found extremely long example 17426:
+    Token length: 261,939
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: claude-sonnet-4
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 133, 'timestamp': '2025-07-26T01:36:31.296762', 'source': 'agent', 'message': 'Reading file: /workspace/python__mypy__0.990/mypy/types.py', 'action': 'read', 'tool_call_metadata': {'function_na...
+      Step 1: {'id': 134, 'timestamp': '2025-07-26T01:36:31.339938', 'source': 'agent', 'message': 'I read the file /workspace/python__mypy__0.990/mypy/types.py.', 'cause': 133, 'observation': 'read', 'tool_call_me...
+      Step 2: {'id': 135, 'timestamp': '2025-07-26T01:36:37.225405', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_01StWZiv...
+
+  Found extremely long example 17427:
+    Token length: 262,065
+    Trajectory steps: 7
+    Instance ID: python__mypy-13808
+    Model: claude-sonnet-4
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 135, 'timestamp': '2025-07-26T01:36:37.225405', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_01StWZiv...
+      Step 1: {'id': 136, 'timestamp': '2025-07-26T01:36:37.354944', 'source': 'agent', 'message': 'I edited the file /workspace/python__mypy__0.990/mypy/types.py.', 'cause': 135, 'observation': 'edit', 'tool_call_...
+      Step 2: {'id': 137, 'timestamp': '2025-07-26T01:36:52.940679', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_01UVnjdR...
+
+  Found extremely long example 17431:
+    Token length: 119,221
+    Trajectory steps: 10
+    Instance ID: python__mypy-13808
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 0, 'timestamp': '2025-07-26T21:18:18.716729', 'source': 'agent', 'message': 'You are OpenHands agent, a helpful AI assistant that can interact with a computer to solve tasks.\n\n<ROLE>\nYour pr...
+      Step 1: {'id': 1, 'timestamp': '2025-07-26T21:18:18.717770', 'source': 'user', 'message': '<uploaded_files>\n/workspace/python__mypy__0.990\n</uploaded_files>\n\nI\'ve uploaded a python code repository in the...
+      Step 2: {'id': 2, 'timestamp': '2025-07-26T21:18:18.720115', 'source': 'user', 'message': 'Retrieving content for: <uploaded_files>\n/workspace/python__mypy__0.990\n</', 'action': 'recall', 'args': {'recall_t...
+
+  Found extremely long example 17432:
+    Token length: 111,825
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 5, 'timestamp': '2025-07-26T21:18:27.206925', 'source': 'agent', 'message': 'Running command: \ncd /workspace/python__mypy__0.990 && ls -l\n', 'action': 'run', 'tool_call_metadata': {'function_...
+      Step 1: {'id': 6, 'timestamp': '2025-07-26T21:18:27.944635', 'source': 'agent', 'message': 'Command `cd /workspace/python__mypy__0.990 && ls -l` executed with exit code 0.', 'cause': 5, 'observation': 'run', ...
+      Step 2: {'id': 7, 'timestamp': '2025-07-26T21:18:31.757667', 'source': 'agent', 'message': 'Running command: \ngrep -r "recursive" /workspace/python__mypy__0.990/mypy && grep -r "json" /workspace/python__mypy...
+
+  Found extremely long example 17433:
+    Token length: 110,261
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 7, 'timestamp': '2025-07-26T21:18:31.757667', 'source': 'agent', 'message': 'Running command: \ngrep -r "recursive" /workspace/python__mypy__0.990/mypy && grep -r "json" /workspace/python__mypy...
+      Step 1: {'id': 8, 'timestamp': '2025-07-26T21:18:32.455861', 'source': 'agent', 'message': 'Command `grep -r "recursive" /workspace/python__mypy__0.990/mypy && grep -r "json" /workspace/python__mypy__0.990/my...
+      Step 2: {'id': 9, 'timestamp': '2025-07-26T21:18:38.759968', 'source': 'agent', 'message': 'Running command: \ncat /workspace/python__mypy__0.990/mypy/types.py /workspace/python__mypy__0.990/mypy/checkexpr.py...
+
+  Found extremely long example 17434:
+    Token length: 100,746
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 9, 'timestamp': '2025-07-26T21:18:38.759968', 'source': 'agent', 'message': 'Running command: \ncat /workspace/python__mypy__0.990/mypy/types.py /workspace/python__mypy__0.990/mypy/checkexpr.py...
+      Step 1: {'id': 10, 'timestamp': '2025-07-26T21:18:39.762160', 'source': 'agent', 'message': 'Command `cat /workspace/python__mypy__0.990/mypy/types.py /workspace/python__mypy__0.990/mypy/checkexpr.py /workspa...
+      Step 2: {'id': 11, 'timestamp': '2025-07-26T21:18:49.828488', 'source': 'agent', 'message': 'Running command: \n\necho \'import typing\nimport json\n\nTree = typing.Union[str, tuple["Tree", "Tree"]]\n\ndef a(...
+
+  Found extremely long example 17435:
+    Token length: 210,465
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 11, 'timestamp': '2025-07-26T21:18:49.828488', 'source': 'agent', 'message': 'Running command: \n\necho \'import typing\nimport json\n\nTree = typing.Union[str, tuple["Tree", "Tree"]]\n\ndef a(...
+      Step 1: {'id': 12, 'timestamp': '2025-07-26T21:18:50.565014', 'source': 'agent', 'message': 'Command `echo \'import typing\nimport json\n\nTree = typing.Union[str, tuple["Tree", "Tree"]]\n\ndef a(b: Tree) -> ...
+      Step 2: {'id': 13, 'timestamp': '2025-07-26T21:18:53.179917', 'source': 'agent', 'message': 'Running command: \n\nmypy /workspace/python__mypy__0.990/test_recursive_json.py --enable-recursive-aliases --show-t...
+
+  Found extremely long example 17436:
+    Token length: 210,361
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 13, 'timestamp': '2025-07-26T21:18:53.179917', 'source': 'agent', 'message': 'Running command: \n\nmypy /workspace/python__mypy__0.990/test_recursive_json.py --enable-recursive-aliases --show-t...
+      Step 1: {'id': 14, 'timestamp': '2025-07-26T21:18:54.844553', 'source': 'agent', 'message': 'Command `mypy /workspace/python__mypy__0.990/test_recursive_json.py --enable-recursive-aliases --show-traceback` ex...
+      Step 2: {'id': 15, 'timestamp': '2025-07-26T21:18:56.819125', 'source': 'agent', 'message': 'Running command: \n\n\nmypy --help | grep recursive\n\n\n', 'action': 'run', 'tool_call_metadata': {'function_name'...
+
+  Found extremely long example 17437:
+    Token length: 213,704
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 15, 'timestamp': '2025-07-26T21:18:56.819125', 'source': 'agent', 'message': 'Running command: \n\n\nmypy --help | grep recursive\n\n\n', 'action': 'run', 'tool_call_metadata': {'function_name'...
+      Step 1: {'id': 16, 'timestamp': '2025-07-26T21:18:57.480677', 'source': 'agent', 'message': 'Command `mypy --help | grep recursive` executed with exit code 0.', 'cause': 15, 'observation': 'run', 'tool_call_m...
+      Step 2: {'id': 17, 'timestamp': '2025-07-26T21:19:00.509100', 'source': 'agent', 'message': 'Running command: \n\n\n\nmypy /workspace/python__mypy__0.990/test_recursive_json.py --show-traceback\n\n\n\n', 'act...
+
+  Found extremely long example 17438:
+    Token length: 217,814
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 17, 'timestamp': '2025-07-26T21:19:00.509100', 'source': 'agent', 'message': 'Running command: \n\n\n\nmypy /workspace/python__mypy__0.990/test_recursive_json.py --show-traceback\n\n\n\n', 'act...
+      Step 1: {'id': 18, 'timestamp': '2025-07-26T21:19:05.513170', 'source': 'agent', 'message': 'Command `mypy /workspace/python__mypy__0.990/test_recursive_json.py --show-traceback` executed with exit code 2.', ...
+      Step 2: {'id': 19, 'timestamp': '2025-07-26T21:19:13.475756', 'source': 'agent', 'message': 'Running command: \n\n\n\ncat /workspace/python__mypy__0.990/mypy/checkexpr.py | grep -C 20 json\n\n\n\n', 'action':...
+
+  Found extremely long example 17440:
+    Token length: 218,928
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 21, 'timestamp': '2025-07-26T21:19:17.838110', 'source': 'agent', 'message': 'Running command: \n\n\n\n\ngrep -r "json" /workspace/python__mypy__0.990/mypy | grep -v test\n\n\n\n\n', 'action': ...
+      Step 1: {'id': 22, 'timestamp': '2025-07-26T21:19:18.535254', 'source': 'agent', 'message': 'Command `grep -r "json" /workspace/python__mypy__0.990/mypy | grep -v test` executed with exit code 0.', 'cause': 2...
+      Step 2: {'id': 23, 'timestamp': '2025-07-26T21:19:23.812910', 'source': 'agent', 'message': 'Running command: \n\n\n\n\ncat /workspace/python__mypy__0.990/mypy/types.py /workspace/python__mypy__0.990/mypy/typ...
+
+  Found extremely long example 17441:
+    Token length: 218,141
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 23, 'timestamp': '2025-07-26T21:19:23.812910', 'source': 'agent', 'message': 'Running command: \n\n\n\n\ncat /workspace/python__mypy__0.990/mypy/types.py /workspace/python__mypy__0.990/mypy/typ...
+      Step 1: {'id': 24, 'timestamp': '2025-07-26T21:19:24.586041', 'source': 'agent', 'message': 'Command `cat /workspace/python__mypy__0.990/mypy/types.py /workspace/python__mypy__0.990/mypy/typeops.py | grep -C ...
+      Step 2: {'id': 25, 'timestamp': '2025-07-26T21:19:34.977405', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_11', 'mod...
+
+  Found extremely long example 17442:
+    Token length: 418,611
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 25, 'timestamp': '2025-07-26T21:19:34.977405', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_11', 'mod...
+      Step 1: {'id': 26, 'timestamp': '2025-07-26T21:19:35.123166', 'source': 'agent', 'message': 'I edited the file /workspace/python__mypy__0.990/mypy/types.py.', 'cause': 25, 'observation': 'edit', 'tool_call_me...
+      Step 2: {'id': 27, 'timestamp': '2025-07-26T21:19:37.975946', 'source': 'agent', 'message': 'Running command: \n\n\n\n\nmypy /workspace/python__mypy__0.990/test_recursive_json.py --show-traceback\n\n\n\n\n', ...
+
+  Found extremely long example 17443:
+    Token length: 419,176
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 27, 'timestamp': '2025-07-26T21:19:37.975946', 'source': 'agent', 'message': 'Running command: \n\n\n\n\nmypy /workspace/python__mypy__0.990/test_recursive_json.py --show-traceback\n\n\n\n\n', ...
+      Step 1: {'id': 28, 'timestamp': '2025-07-26T21:19:39.487982', 'source': 'agent', 'message': 'Command `mypy /workspace/python__mypy__0.990/test_recursive_json.py --show-traceback` executed with exit code 2.', ...
+      Step 2: {'id': 29, 'timestamp': '2025-07-26T21:19:50.673795', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_13', 'mod...
+
+  Found extremely long example 17444:
+    Token length: 221,491
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 29, 'timestamp': '2025-07-26T21:19:50.673795', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_13', 'mod...
+      Step 1: {'id': 30, 'timestamp': '2025-07-26T21:19:50.854359', 'source': 'agent', 'message': 'I edited the file /workspace/python__mypy__0.990/mypy/types.py.', 'cause': 29, 'observation': 'edit', 'tool_call_me...
+      Step 2: {'id': 31, 'timestamp': '2025-07-26T21:19:53.671355', 'source': 'agent', 'message': 'Running command: \n\n\n\n\n\nmypy /workspace/python__mypy__0.990/test_recursive_json.py --show-traceback\n\n\n\n\n\...
+
+  Found extremely long example 17445:
+    Token length: 221,814
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 31, 'timestamp': '2025-07-26T21:19:53.671355', 'source': 'agent', 'message': 'Running command: \n\n\n\n\n\nmypy /workspace/python__mypy__0.990/test_recursive_json.py --show-traceback\n\n\n\n\n\...
+      Step 1: {'id': 32, 'timestamp': '2025-07-26T21:19:55.146339', 'source': 'agent', 'message': 'Command `mypy /workspace/python__mypy__0.990/test_recursive_json.py --show-traceback` executed with exit code 2.', ...
+      Step 2: {'id': 33, 'timestamp': '2025-07-26T21:20:06.224454', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_15', 'mod...
+
+  Found extremely long example 17446:
+    Token length: 221,818
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 33, 'timestamp': '2025-07-26T21:20:06.224454', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_15', 'mod...
+      Step 1: {'id': 34, 'timestamp': '2025-07-26T21:20:06.344902', 'source': 'agent', 'message': 'I edited the file /workspace/python__mypy__0.990/mypy/types.py.', 'cause': 33, 'observation': 'edit', 'tool_call_me...
+      Step 2: {'id': 35, 'timestamp': '2025-07-26T21:20:11.112814', 'source': 'agent', 'message': 'Reading file: /workspace/python__mypy__0.990/mypy/types.py', 'action': 'read', 'tool_call_metadata': {'function_nam...
+
+  Found extremely long example 17447:
+    Token length: 221,866
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 35, 'timestamp': '2025-07-26T21:20:11.112814', 'source': 'agent', 'message': 'Reading file: /workspace/python__mypy__0.990/mypy/types.py', 'action': 'read', 'tool_call_metadata': {'function_nam...
+      Step 1: {'id': 36, 'timestamp': '2025-07-26T21:20:15.316849', 'source': 'agent', 'message': 'I read the file /workspace/python__mypy__0.990/mypy/types.py.', 'cause': 35, 'observation': 'read', 'tool_call_meta...
+      Step 2: {'id': 37, 'timestamp': '2025-07-26T21:20:33.251238', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_17', 'mod...
+
+  Found extremely long example 17448:
+    Token length: 217,261
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 37, 'timestamp': '2025-07-26T21:20:33.251238', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_17', 'mod...
+      Step 1: {'id': 38, 'timestamp': '2025-07-26T21:20:33.384693', 'source': 'agent', 'message': 'I edited the file /workspace/python__mypy__0.990/mypy/types.py.', 'cause': 37, 'observation': 'edit', 'tool_call_me...
+      Step 2: {'id': 39, 'timestamp': '2025-07-26T21:20:37.105910', 'source': 'agent', 'message': 'Running command: \n\n\n\n\n\nmypy /workspace/python__mypy__0.990/test_recursive_json.py --show-traceback\n\n\n\n\n\...
+
+  Found extremely long example 17449:
+    Token length: 216,788
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 39, 'timestamp': '2025-07-26T21:20:37.105910', 'source': 'agent', 'message': 'Running command: \n\n\n\n\n\nmypy /workspace/python__mypy__0.990/test_recursive_json.py --show-traceback\n\n\n\n\n\...
+      Step 1: {'id': 40, 'timestamp': '2025-07-26T21:20:38.536896', 'source': 'agent', 'message': 'Command `mypy /workspace/python__mypy__0.990/test_recursive_json.py --show-traceback` executed with exit code 2.', ...
+      Step 2: {'id': 41, 'timestamp': '2025-07-26T21:20:49.487829', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_19', 'mod...
+
+  Found extremely long example 17453:
+    Token length: 215,385
+    Trajectory steps: 8
+    Instance ID: python__mypy-13808
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 47, 'timestamp': '2025-07-26T21:21:28.850999', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_22', 'mod...
+      Step 1: {'id': 48, 'timestamp': '2025-07-26T21:21:28.973614', 'source': 'agent', 'message': 'I edited the file /workspace/python__mypy__0.990/mypy/types.py.', 'cause': 47, 'observation': 'edit', 'tool_call_me...
+      Step 2: {'id': 49, 'timestamp': '2025-07-26T21:21:32.475975', 'source': 'agent', 'message': 'Reading file: /workspace/python__mypy__0.990/mypy/types.py', 'action': 'read', 'tool_call_metadata': {'function_nam...
+
+  Found extremely long example 17454:
+    Token length: 422,196
+    Trajectory steps: 14
+    Instance ID: python__mypy-13808
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 49, 'timestamp': '2025-07-26T21:21:32.475975', 'source': 'agent', 'message': 'Reading file: /workspace/python__mypy__0.990/mypy/types.py', 'action': 'read', 'tool_call_metadata': {'function_nam...
+      Step 1: {'id': 50, 'timestamp': '2025-07-26T21:21:32.531782', 'source': 'agent', 'message': 'I read the file /workspace/python__mypy__0.990/mypy/types.py.', 'cause': 49, 'observation': 'read', 'tool_call_meta...
+      Step 2: {'id': 51, 'timestamp': '2025-07-26T21:21:42.156299', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_24', 'mod...
+
+  Found extremely long example 17455:
+    Token length: 421,643
+    Trajectory steps: 13
+    Instance ID: python__mypy-13808
+    Model: deepseek-v3
+    Success: False
+    First 3 trajectory steps:
+      Step 0: {'id': 51, 'timestamp': '2025-07-26T21:21:42.156299', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_24', 'mod...
+      Step 1: {'id': 52, 'timestamp': '2025-07-26T21:21:42.288151', 'source': 'agent', 'message': 'I edited the file /workspace/python__mypy__0.990/mypy/types.py.', 'cause': 51, 'observation': 'edit', 'tool_call_me...
+      Step 2: {'id': 53, 'timestamp': '2025-07-26T21:21:47.133284', 'source': 'agent', 'message': 'Running command: \n\n\n\n\n\n\nmypy /workspace/python__mypy__0.990/test_recursive_json.py --show-traceback\n\n\n\n\...
+
+  Found extremely long example 21665:
+    Token length: 101,195
+    Trajectory steps: 8
+    Instance ID: iterative__dvc-5004
+    Model: claude-sonnet-4
+    Success: True
+    First 3 trajectory steps:
+      Step 0: {'id': 95, 'timestamp': '2025-07-26T00:19:02.048568', 'source': 'agent', 'message': 'Running command: cd /workspace/iterative__dvc__1.10 && python test_boolean_fix.py', 'action': 'run', 'tool_call_met...
+      Step 1: {'id': 96, 'timestamp': '2025-07-26T00:19:02.707957', 'source': 'agent', 'message': 'Command `cd /workspace/iterative__dvc__1.10 && python test_boolean_fix.py` executed with exit code 0.', 'cause': 95...
+      Step 2: {'id': 97, 'timestamp': '2025-07-26T00:19:16.498951', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_01VvUJbFH...
+
+  Found extremely long example 21666:
+    Token length: 101,301
+    Trajectory steps: 8
+    Instance ID: iterative__dvc-5004
+    Model: claude-sonnet-4
+    Success: True
+    First 3 trajectory steps:
+      Step 0: {'id': 97, 'timestamp': '2025-07-26T00:19:16.498951', 'source': 'agent', 'message': '', 'action': 'edit', 'tool_call_metadata': {'function_name': 'str_replace_editor', 'tool_call_id': 'toolu_01VvUJbFH...
+      Step 1: {'id': 98, 'timestamp': '2025-07-26T00:19:16.634645', 'source': 'agent', 'message': 'I edited the file /workspace/iterative__dvc__1.10/test_edge_cases.py.', 'cause': 97, 'observation': 'edit', 'tool_c...
+      Step 2: {'id': 99, 'timestamp': '2025-07-26T00:19:19.270373', 'source': 'agent', 'message': 'Running command: cd /workspace/iterative__dvc__1.10 && python test_edge_cases.py', 'action': 'run', 'tool_call_meta...
+
+  Found extremely long example 21668:
+    Token length: 102,281
+    Trajectory steps: 8
+    Instance ID: iterative__dvc-5004
+    Model: claude-sonnet-4
+    Success: True
+    First 3 trajectory steps:
+      Step 0: {'id': 101, 'timestamp': '2025-07-26T00:19:23.418143', 'source': 'agent', 'message': 'Running command: cd /workspace/iterative__dvc__1.10 && python -m pytest tests/unit/dependency/test_params.py -v', ...
+      Step 1: {'id': 102, 'timestamp': '2025-07-26T00:19:27.974633', 'source': 'agent', 'message': 'Command `cd /workspace/iterative__dvc__1.10 && python -m pytest tests/unit/dependency/test_params.py -v` executed ...
+      Step 2: {'id': 103, 'timestamp': '2025-07-26T00:19:31.951795', 'source': 'agent', 'message': 'Running command: cd /workspace/iterative__dvc__1.10 && git status', 'action': 'run', 'tool_call_metadata': {'funct...
+
+
+Searching Validation for examples > 100k tokens...
