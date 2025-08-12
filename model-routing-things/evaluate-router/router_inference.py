@@ -13,7 +13,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 # Model configuration
 import os
 BASE_MODEL_PATH = "/data/user_data/sophiapi/checkpoints/qwen3_router_model-5_instance-100_pruned-4_with-ids_by-example"
-CHECKPOINT = os.getenv("ROUTER_CHECKPOINT", "checkpoint-11500")  # Default to latest
+CHECKPOINT = os.getenv("ROUTER_CHECKPOINT", "checkpoint-13500")  # Default to latest
 MODEL_PATH = f"{BASE_MODEL_PATH}/{CHECKPOINT}"
 AVAILABLE_MODELS = [
     "claude-3-5-haiku-20241022",

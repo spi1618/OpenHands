@@ -3,7 +3,7 @@
 #SBATCH --job-name=router-rollout           # appears in squeue
 #SBATCH --partition=general             # up to 2 days; preempt for longer
 #SBATCH --nodes=1
-#SBATCH --gres=gpu:0               # no gpus needed for remote runtime
+#SBATCH --gres=gpu:0               
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=128G
 #SBATCH --time=0-48:00                  # D-HH:MM   (48 h here)
@@ -44,7 +44,8 @@ NUM_WORKERS=${NUM_WORKERS:-1}
 SKIP_EVAL=${SKIP_EVAL:-false}
 START_ROUTER=${START_ROUTER:-false}
 ANALYZE_DECISIONS=${ANALYZE_DECISIONS:-true}
-ROUTER_URL=${ROUTER_URL:-"http://localhost:8000"}
+RANDOM_MODE=${RANDOM_MODE:-false}
+ROUTER_URL=${ROUTER_URL:-"http://localhost:8123"}
 ROUTER_CHECKPOINT=${ROUTER_CHECKPOINT:-"checkpoint-11500"}
 
 echo "=== Configuration ==="
@@ -54,6 +55,7 @@ echo "  Num Workers: ${NUM_WORKERS}"
 echo "  Skip Evaluation: ${SKIP_EVAL}"
 echo "  Start Router: ${START_ROUTER}"
 echo "  Analyze Decisions: ${ANALYZE_DECISIONS}"
+echo "  Random Mode: ${RANDOM_MODE}"
 echo "  Router URL: ${ROUTER_URL}"
 echo "  Router Checkpoint: ${ROUTER_CHECKPOINT}"
 
@@ -76,6 +78,10 @@ fi
 
 if [ "$ANALYZE_DECISIONS" = "true" ]; then
     CMD_ARGS+=("--analyze-decisions")
+fi
+
+if [ "$RANDOM_MODE" = "true" ]; then
+    CMD_ARGS+=("--random-mode")
 fi
 
 # Run the Python script with unbuffered output

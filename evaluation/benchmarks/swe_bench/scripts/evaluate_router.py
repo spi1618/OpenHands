@@ -25,7 +25,7 @@ def check_router_health(router_url: str) -> bool:
     except requests.RequestException:
         return False
 
-def start_router_server(router_dir: str, api_key: str) -> subprocess.Popen:
+def start_router_server(router_dir: str, api_key: str, random_mode: bool = False) -> subprocess.Popen:
     """Start the router server in the background."""
     env = os.environ.copy()
     env["LITELLM_API_KEY"] = api_key
@@ -35,6 +35,11 @@ def start_router_server(router_dir: str, api_key: str) -> subprocess.Popen:
     if router_checkpoint:
         env["ROUTER_CHECKPOINT"] = router_checkpoint
         print(f"[INFO] Passing ROUTER_CHECKPOINT={router_checkpoint} to router server")
+    
+    # Pass through the RANDOM_MODE environment variable
+    if random_mode:
+        env["RANDOM_MODE"] = "true"
+        print(f"[INFO] Passing RANDOM_MODE=true to router server")
     
     cmd = [
         "python3", "swe_bench_router.py"
@@ -64,6 +69,10 @@ def run_router_inference(eval_limit: int, max_iter: int, num_workers: int = 1):
     # [ignore] Use the router LLM config from the model-routing directory
     # router_llm_config = "../router_llm_config.toml"
     
+    # This function calls run_infer.sh, which calls run_infer.py
+    # The actual router API call (/v1/chat/completions) happens in run_infer.py
+    # OpenHands uses the router as a standard LLM endpoint via /v1/chat/completions
+    
     cmd = [
         "./evaluation/benchmarks/swe_bench/scripts/run_infer.sh",
         "llm.router",           # MODEL_CONFIG (router config)
@@ -72,7 +81,7 @@ def run_router_inference(eval_limit: int, max_iter: int, num_workers: int = 1):
         str(eval_limit),             # EVAL_LIMIT
         str(max_iter),               # MAX_ITER
         str(num_workers),            # NUM_WORKERS
-        "princeton-nlp/SWE-bench_Lite",   # DATASET
+        "princeton-nlp/SWE-bench_Verified",   # DATASET
         "test",                      # SPLIT
         "1",                         # N_RUNS (default is 1)
         "swe"                        # MODE (default is swe)
@@ -138,7 +147,7 @@ def run_router_evaluation(output_file: str, num_workers: int = 1):
         "./evaluation/benchmarks/swe_bench/scripts/eval_infer_remote.sh",
         output_file,                 # INPUT_FILE
         str(num_workers),            # NUM_WORKERS
-        "princeton-nlp/SWE-bench_Lite",   # DATASET
+        "princeton-nlp/SWE-bench_Verified",   # DATASET
         "test"                      # SPLIT
     ]
     env = os.environ.copy()
@@ -207,7 +216,7 @@ def analyze_router_decisions(output_file: str):
         print(f"  {model}: {count} times ({percentage:.1f}%)")
 
 def main():
-    parser = argparse.ArgumentParser(description="Evaluate router on SWE-Bench Lite.")
+    parser = argparse.ArgumentParser(description="Evaluate router on SWE-Bench Verified.")
     parser.add_argument("--num-workers", type=int, default=1, help="Number of parallel workers")
     parser.add_argument("--eval-limit", type=int, default=100, help="Number of instances to evaluate")
     parser.add_argument("--max-iter", type=int, default=100, help="Maximum iterations per instance")
@@ -215,7 +224,8 @@ def main():
     parser.add_argument("--start-router", default=False, action="store_true", help="Start router server automatically")
     parser.add_argument("--router-dir", default="/home/sophiapi/model-routing", help="Directory containing router server")
     parser.add_argument("--analyze-decisions", default=False, action="store_true", help="Analyze router decisions after inference")
-    parser.add_argument("--router-url", default="http://localhost:8000", help="URL of the router server")
+    parser.add_argument("--router-url", default="http://localhost:8123", help="URL of the router server")
+    parser.add_argument("--random-mode", default=False, action="store_true", help="Enable random mode for router server")
     args = parser.parse_args()
     
     router_process = None
@@ -229,7 +239,7 @@ def main():
                 if not api_key:
                     raise RuntimeError("LITELLM_API_KEY environment variable is required to start router server")
                 
-                router_process = start_router_server(args.router_dir, api_key)
+                router_process = start_router_server(args.router_dir, api_key, args.random_mode)
                 
                 # Wait for router to be ready
                 max_retries = 10

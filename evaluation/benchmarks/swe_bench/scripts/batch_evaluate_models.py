@@ -131,10 +131,10 @@ def run_evaluation(output_file: str, model: Dict, num_workers: int = 1):
 
 def main():
     
-    # Load the verified instances  
-    swegym_verified_path = Path("/home/sophiapi/model-routing/OpenHands/evaluation/benchmarks/swe_bench/split/swegym_verified_instances.json")  
-    with open(swegym_verified_path, 'r') as f:  
-        verified_instances = json.load(f)  
+    # # Load the verified instances  
+    # swegym_verified_path = Path("/home/sophiapi/model-routing/OpenHands/evaluation/benchmarks/swe_bench/split/swegym_verified_instances.json")  
+    # with open(swegym_verified_path, 'r') as f:  
+    #     verified_instances = json.load(f)  
     
     # # Select 100 random instances  
     # random_instances = random.sample(verified_instances, 100)  
