@@ -67,13 +67,17 @@ srun --pty bash -l
 cd ~/model-routing
 export LITELLM_API_KEY="sk-..."
 # Export other environment variables...
-# Set the checkpoint (defaults to checkpoint-13500)
+# Set the base model path (defaults to "/data/user_data/sophiapi/checkpoints/stupid_withtokens_qwen3_router_model-5_instance-100_pruned-4_with-ids_by-example")
+export BASE_MODEL_PATH="/path/to/model/directory"
+# Set the checkpoint (defaults to checkpoint-796)
 export ROUTER_CHECKPOINT=checkpoint-5000
+# Set the max tokens (defaults to 4096)
+export MAX_TOKENS=8192
 # Set the router port (defaults to 8123)
 export ROUTER_PORT=8000
-python3 swe_bench_router.py
+python3 swe_bench_router_stupid.py
 # To automatically save everything that shows up in the terminal to a text file:
-python3 swe_bench_router.py 2>&1 | tee "router_debug_$(date +%Y%m%d_%H%M%S).log"
+python3 swe_bench_router_stupid.py 2>&1 | tee "router_stupid_debug_$(date +%Y%m%d_%H%M%S).log"
 # Note: Server starts on http://babel-2-25:8123 (or whatever hostname)
 ```
 
@@ -87,7 +91,7 @@ curl http://YOUR_HOSTNAME:8123/health
 curl -X POST http://YOUR_HOSTNAME:8123/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"messages":[{"role":"user","content":"Hello"}]}'
-# Example: curl -X POST http://babel-3-21:8123/v1/chat/completions -H "Content-Type: application/json" -d '{"messages":[{"role":"user","content":"Hello"}]}'
+# Example: curl -X POST http://babel-2-25:8123/v1/chat/completions -H "Content-Type: application/json" -d '{"messages":[{"role":"user","content":"Hello"}]}'
 ```
 
 ### 3. Update OpenHands config
@@ -95,7 +99,7 @@ curl -X POST http://YOUR_HOSTNAME:8123/v1/chat/completions \
 # Update the OpenHands config with the actual hostname
 cd ~/model-routing/OpenHands
 sed -i "/\[llm\.router\]/,/^\[/ s/base_url = \"http:\/\/[^:]*:8123\/v1\"/base_url = \"http:\/\/YOUR_HOSTNAME:8123\/v1\"/" config.toml
-# Example: sed -i "/\[llm\.router\]/,/^\[/ s/base_url = \"http:\/\/[^:]*:8123\/v1\"/base_url = \"http:\/\/babel-4-33:8123\/v1\"/" config.toml
+# Example: sed -i "/\[llm\.router\]/,/^\[/ s/base_url = \"http:\/\/[^:]*:8123\/v1\"/base_url = \"http:\/\/babel-2-25:8123\/v1\"/" config.toml
 ```
 
 ### 4. Run evaluation with correct router URL

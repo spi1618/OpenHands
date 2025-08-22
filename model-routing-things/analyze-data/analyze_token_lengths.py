@@ -33,7 +33,7 @@ def build_prompt(traj, cand):
 
 def row_to_text(ex):
     prompt = build_prompt(ex["partial_trajectory"], ex["model"])
-    answer = " [YES]" if ex["successfully_patched"] else " [NO]"
+    answer = "[YES]" if ex["successfully_patched"] else "[NO]"
     return {"text": prompt + answer}
 
 # Parse command line arguments

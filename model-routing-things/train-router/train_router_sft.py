@@ -143,7 +143,7 @@ tok.add_special_tokens(TOK_SPECIALS)
 
 def row_to_text(ex):
     prompt = build_prompt(ex["partial_trajectory"], ex["model"])
-    answer = " [YES]" if ex["successfully_patched"] else " [NO]" # ensures single token
+    answer = "[YES]" if ex["successfully_patched"] else "[NO]" # ensures single token
     
     ### SMART TRUNCATION ###
     

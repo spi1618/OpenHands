@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Batch evaluation script for router on SWE-Bench.
+Batch evaluation script for router on SWE-Bench_Verified test set.
 Usage: python evaluation/benchmarks/swe_bench/scripts/evaluate_router.py --num-workers 2
 """
 
