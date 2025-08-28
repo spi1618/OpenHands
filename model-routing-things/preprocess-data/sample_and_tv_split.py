@@ -10,7 +10,7 @@
 # Example usage:
 # python3 sample_and_tv_split.py \
 #     --input-file /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned_no-oh-prompt_partial-trajectories_2025-08-28T00-49-09/model-5_instance-100_with-ids_swe-gym_cleaned_no-oh-prompt_partial-trajectories_2025-08-28T00-49-09.jsonl \
-#     --sample-size 1000 \
+#     --sample-size 20000 \
 #     --train-proportion 0.8 \
 #     --success-rate 0.4 
 # This will sample 1000 examples from the full dataset, putting 80% of the instances in the train set and 20% in the validation set, and aiming for a 50% success rate in both sets.
