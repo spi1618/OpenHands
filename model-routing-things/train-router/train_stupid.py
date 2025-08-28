@@ -147,6 +147,8 @@ training_args = SFTConfig(
     # assistant_only_loss=True, # idk i read this from the hf docs, not sure if it should be toggled on
     report_to=["wandb"],
     max_length=MAX_TOKENS,
+    bf16=True,
+    use_liger_kernel = True,
     model_init_kwargs = {
         "attn_implementation": "flash_attention_2",
         "trust_remote_code": True,
@@ -157,7 +159,7 @@ training_args = SFTConfig(
   
 # Initialize trainer  
 trainer = SFTTrainer(  
-    model="Qwen/Qwen2.5-0.5B-Instruct", 
+    model="Qwen/Qwen2.5-0.5B-Instruct",  
     args=training_args,  
     train_dataset=train_dataset,  
     eval_dataset=val_dataset,  
