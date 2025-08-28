@@ -19,7 +19,7 @@ from trl import SFTTrainer, SFTConfig, apply_chat_template
 # Example usage:
 
 # poetry run python3 ../convert_raw_to_pc_chat-template.py \
-# --original-file /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned-partial-trajectories_2025-08-26T15-26-45/1000-samples/train.jsonl \
+# --original-file /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned-partial-trajectories_2025-08-26T15-26-45/1000-samples/val.jsonl \
 # --pc-output-dir /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned-partial-trajectories_2025-08-26T15-26-45/1000-samples \
 # --hf-output-dir /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned-partial-trajectories_2025-08-26T15-26-45/1000-samples \
 # --base-model Qwen/Qwen2.5-0.5B-Instruct \
@@ -27,11 +27,11 @@ from trl import SFTTrainer, SFTConfig, apply_chat_template
 # --max-filter-tokens 32000
 
 # python3 convert_raw_to_pc_chat-template.py \
-# --original-file /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned-partial-trajectories_2025-08-26T15-26-45/1000-samples/train.jsonl \
-# --pc-output-dir /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned-partial-trajectories_2025-08-26T15-26-45/1000-samples \
-# --hf-output-dir /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned-partial-trajectories_2025-08-26T15-26-45/1000-samples \
+# --original-file /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned_no-oh-prompt_partial-trajectories_2025-08-28T00-49-09/1000-samples/val.jsonl \
+# --pc-output-dir /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned_no-oh-prompt_partial-trajectories_2025-08-28T00-49-09/1000-samples \
+# --hf-output-dir /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned_no-oh-prompt_partial-trajectories_2025-08-28T00-49-09/1000-samples \
 # --base-model Qwen/Qwen2.5-0.5B-Instruct \
-# --max-length 8192 \
+# --max-length 16384 \
 # --max-filter-tokens 32000
 
 
@@ -81,56 +81,24 @@ def generate_timestamped_filename(base_name: str, max_length: int, extension: st
 
 
 
-def build_prompt_with_truncation(partial_trajectory: List[Dict], model_name: str, max_length: int, tokenizer=None):
+def build_partial_trajectory_with_truncation(partial_trajectory: List[Dict], max_traj_tokens: int, tokenizer=None):
     """
-    Build prompt with intelligent truncation that preserves essential structure.
-    
-    This function ensures that:
-    1. System instructions are always preserved
-    2. Model information is always preserved  
-    3. Question is always preserved
-    4. Trajectory is truncated intelligently to fit within max_length
+    Literally just cuts down on the trajectory in case the trajectory is too long.
     """
     was_truncated = False
     
-    # Define the essential prompt parts that must be preserved
-    system_part = (
-        "<|system|>\n"
-        "You predict whether the agent or assistant will ultimately solve the SWE issue successfully given the partial trajectory so far and the candidate model that will be used to attempt the rest of the task.\n"
-        "Respond with YES or NO only.\n"
-        "The partial trajectory contains information about the agent or assistant's actions, observations, and interactions with the user or environment.\n"
-        "The partial trajectory may be truncated to the most recent information.\n"
-        "</|system|>\n\n"
-    )
-    trajectory_header = "### Partial trajectory\n"
-    model_part = f"### Candidate model\n[M] {model_name}\n\n"
-    question_part = "### Will this agent eventually succeed if the rest of the task is attempted with the candidate model?\n"
-    
     # Calculate token lengths for essential parts (if tokenizer available)
     if tokenizer:
-        system_tokens = len(tokenizer.encode(system_part))
-        trajectory_header_tokens = len(tokenizer.encode(trajectory_header))
-        model_tokens = len(tokenizer.encode(model_part))
-        question_tokens = len(tokenizer.encode(question_part))
-        
-        # Reserve space for essential parts
-        reserved_tokens = system_tokens + trajectory_header_tokens + model_tokens + question_tokens
-        
-        # Calculate how much space we have for trajectory content
-        max_trajectory_tokens = max_length - reserved_tokens - 50  # Leave some buffer
-        
         # Convert trajectory to text and truncate if needed
         trajectory_text = "\n".join(safe_json_dumps(step) for step in partial_trajectory)
-        
         # Count the number of tokens in the trajectory
         trajectory_tokens = tokenizer.encode(trajectory_text)
-        
         # Debug logging for truncation decisions
-        if len(trajectory_tokens) > max_trajectory_tokens:
+        if len(trajectory_tokens) > max_traj_tokens:    
             was_truncated = True
             # Truncate trajectory tokens and reconstruct
-            # Truncate the trajectory to (roughly)the first max_trajectory_tokens / 2 tokens + last max_trajectory_tokens / 2 tokens
-            temp = max_trajectory_tokens // 2 - 20 # 20 tokens for the ...(omitted for brevity)... buffer
+            # Truncate the trajectory to (roughly)the first max_traj_tokens / 2 tokens + last max_traj_tokens / 2 tokens
+            temp = max_traj_tokens // 2 - 20 # 20 tokens for the ...(omitted for brevity)... buffer
             truncated_trajectory_tokens_beginning = trajectory_tokens[:temp]
             truncated_trajectory_tokens_end = trajectory_tokens[-temp:]
             truncated_trajectory = tokenizer.decode(truncated_trajectory_tokens_beginning) + "\n...(omitted for brevity)...\n" + tokenizer.decode(truncated_trajectory_tokens_end)
@@ -139,17 +107,7 @@ def build_prompt_with_truncation(partial_trajectory: List[Dict], model_name: str
     else:
         raise ValueError("No tokenizer provided")
     
-    # Reconstruct the full prompt with all essential parts
-    prompt = system_part + trajectory_header + truncated_trajectory + model_part + question_part
-    
-    # Final debug check and safety enforcement
-    if tokenizer:
-        final_tokens = len(tokenizer.encode(prompt))
-        
-        if final_tokens > max_length:
-            raise ValueError(f"Final prompt exceeds max_length! {final_tokens} > {max_length}")
-    
-    return prompt, was_truncated
+    return truncated_trajectory, was_truncated
     
     
 def convert_dataset_format(raw_data: List[Dict], max_length: int = 8192, max_filter_tokens: int = 32000, tokenizer=None) -> List[Dict]:
@@ -185,27 +143,59 @@ def convert_dataset_format(raw_data: List[Dict], max_length: int = 8192, max_fil
                 if coarse_filtered_count < 5:  # Only show first 5 for debugging
                     print(f"DEBUG: Coarse filtered example {i}: {raw_tokens} tokens > {max_filter_tokens}")
                 continue
+        else:
+            raise ValueError("No tokenizer provided")
+        
+        
+        # Compute the number of tokens in my (yes me, long-suffering summer intern) part of the prompt
+        system_part = (
+            "You predict whether the agent or assistant will ultimately solve the SWE issue successfully given the partial trajectory so far and the candidate model that will be used to attempt the rest of the task.\n"
+            "Respond with YES or NO only.\n"
+            "The partial trajectory contains information about the agent or assistant's actions, observations, and interactions with the user or environment.\n"
+            "The partial trajectory may be truncated to the most recent information.\n"
+            "The user will provide the partial trajectory.\n"
+        )
+        trajectory_header = "### Partial trajectory:\n\n\n"
+        model_part = f"### Candidate model\n[M] {model_name}\n\n"
+        question_part = "### Will this agent eventually succeed if the rest of the task is attempted with the candidate model?\n"
+        
+        system_tokens = len(tokenizer.encode(system_part))
+        trajectory_header_tokens = len(tokenizer.encode(trajectory_header))
+        model_tokens = len(tokenizer.encode(model_part))
+        question_tokens = len(tokenizer.encode(question_part))
+        
+        # Reserve space for essential parts
+        reserved_tokens = system_tokens + trajectory_header_tokens + model_tokens + question_tokens
+        
+        # Calculate how much space we have for trajectory content
+        max_trajectory_tokens = max_length - reserved_tokens - 100  # Leave some buffer
+    
         
         # Build prompt with smart truncation
-        prompt, was_truncated = build_prompt_with_truncation(
-            partial_trajectory, model_name, max_length, tokenizer
+        truncated_trajectory, was_truncated = build_partial_trajectory_with_truncation(
+            partial_trajectory, max_trajectory_tokens, tokenizer
         )
         completion = "YES" if successfully_patched else "NO"
         
         if was_truncated:
             truncated_count += 1
         
-        # Final token length check
-        if tokenizer:
-            prompt_tokens = len(tokenizer.encode(prompt))
-            completion_tokens = len(tokenizer.encode(completion))
-            total_tokens = prompt_tokens + completion_tokens
-            
-            if total_tokens > max_length:
-                raise ValueError(f"Final prompt exceeds max_length! {total_tokens} > {max_length}")
+        # Build the prompts:
+        prompt_part1 = {
+            "role": "system",
+            "content": system_part
+        }
+        prompt_part2 = {
+            "role": "user",
+            "content": trajectory_header + truncated_trajectory
+        }
+        prompt_part3 = {
+            "role": "system",
+            "content": model_part + question_part
+        }
         
         converted_data.append({
-            "prompt": [{"role": "user", "content": prompt}],
+            "prompt": [prompt_part1, prompt_part2, prompt_part3],
             "completion": [{"role": "assistant", "content": completion}]
         })
         
