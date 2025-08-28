@@ -1,0 +1,349 @@
+Post-train evaluation report
+Generated: 2025-08-27 23:41:13
+Model: /data/user_data/sophiapi/checkpoints/stupid_chat-template_qwen3_router_model-5_instance-100_pruned-4_with-ids_by-example_max-length-16384/checkpoint-1600
+Dataset: /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned-partial-trajectories_2025-08-26T15-26-45/1000-samples/20250827_172632_val_chat-template_max-len-16384.jsonl
+================================================================================
+
+
+
+=========== EXAMPLE 0 ===========
+
+True completion: '[{'role': 'assistant', 'content': 'NO'}]'
+
+Model's response: NO
+
+yes_logit: 20.7315616607666
+no_logit: 26.75722885131836
+Yes probability: 0.0024101166054606438
+No probability: 0.9975898861885071
+=== END OF EXAMPLE 0 ===
+
+
+
+=========== EXAMPLE 1 ===========
+
+True completion: '[{'role': 'assistant', 'content': 'NO'}]'
+
+Model's response: NO
+
+yes_logit: 21.151920318603516
+no_logit: 28.64069366455078
+Yes probability: 0.0005590158980339766
+No probability: 0.9994410276412964
+=== END OF EXAMPLE 1 ===
+
+
+
+=========== EXAMPLE 2 ===========
+
+True completion: '[{'role': 'assistant', 'content': 'NO'}]'
+
+Model's response: NO
+
+yes_logit: 20.100175857543945
+no_logit: 28.05126953125
+Yes probability: 0.00035215262323617935
+No probability: 0.9996477961540222
+=== END OF EXAMPLE 2 ===
+
+
+
+=========== EXAMPLE 3 ===========
+
+True completion: '[{'role': 'assistant', 'content': 'NO'}]'
+
+Model's response: NO
+
+yes_logit: 23.417163848876953
+no_logit: 29.414995193481445
+Yes probability: 0.0024779776576906443
+No probability: 0.9975220561027527
+=== END OF EXAMPLE 3 ===
+
+
+
+=========== EXAMPLE 4 ===========
+
+True completion: '[{'role': 'assistant', 'content': 'YES'}]'
+
+Model's response: NO
+
+yes_logit: 23.97739028930664
+no_logit: 27.233060836791992
+Yes probability: 0.0371236577630043
+No probability: 0.9628763198852539
+=== END OF EXAMPLE 4 ===
+
+
+
+=========== EXAMPLE 5 ===========
+
+True completion: '[{'role': 'assistant', 'content': 'NO'}]'
+
+Model's response: NO
+
+yes_logit: 22.084508895874023
+no_logit: 28.51055908203125
+Yes probability: 0.0016162157990038395
+No probability: 0.9983838200569153
+=== END OF EXAMPLE 5 ===
+
+
+
+=========== EXAMPLE 6 ===========
+
+True completion: '[{'role': 'assistant', 'content': 'NO'}]'
+
+Model's response: NO
+
+yes_logit: 22.801918029785156
+no_logit: 28.57740592956543
+Yes probability: 0.00309308641590178
+No probability: 0.9969069361686707
+=== END OF EXAMPLE 6 ===
+
+
+
+=========== EXAMPLE 7 ===========
+
+True completion: '[{'role': 'assistant', 'content': 'NO'}]'
+
+Model's response: NO
+
+yes_logit: 23.262269973754883
+no_logit: 30.475934982299805
+Yes probability: 0.0007359111332334578
+No probability: 0.999264121055603
+=== END OF EXAMPLE 7 ===
+
+
+
+=========== EXAMPLE 8 ===========
+
+True completion: '[{'role': 'assistant', 'content': 'NO'}]'
+
+Model's response: NO
+
+yes_logit: 21.946090698242188
+no_logit: 27.449623107910156
+Yes probability: 0.004055843688547611
+No probability: 0.9959441423416138
+=== END OF EXAMPLE 8 ===
+
+
+
+=========== EXAMPLE 9 ===========
+
+True completion: '[{'role': 'assistant', 'content': 'NO'}]'
+
+Model's response: NO
+
+yes_logit: 22.420591354370117
+no_logit: 26.8275146484375
+Yes probability: 0.012045764364302158
+No probability: 0.9879542589187622
+=== END OF EXAMPLE 9 ===
+
+
+
+=========== EXAMPLE 10 ===========
+
+True completion: '[{'role': 'assistant', 'content': 'NO'}]'
+
+Model's response: NO
+
+yes_logit: 21.15558624267578
+no_logit: 27.23491859436035
+Yes probability: 0.0022844739723950624
+No probability: 0.9977155327796936
+=== END OF EXAMPLE 10 ===
+
+
+
+=========== EXAMPLE 11 ===========
+
+True completion: '[{'role': 'assistant', 'content': 'NO'}]'
+
+Model's response: NO
+
+yes_logit: 20.345745086669922
+no_logit: 30.139963150024414
+Yes probability: 5.577003685175441e-05
+No probability: 0.9999442100524902
+=== END OF EXAMPLE 11 ===
+
+
+
+=========== EXAMPLE 12 ===========
+
+True completion: '[{'role': 'assistant', 'content': 'YES'}]'
+
+Model's response: NO
+
+yes_logit: 24.23856544494629
+no_logit: 27.114425659179688
+Yes probability: 0.05335986241698265
+No probability: 0.946640133857727
+=== END OF EXAMPLE 12 ===
+
+
+
+=========== EXAMPLE 13 ===========
+
+True completion: '[{'role': 'assistant', 'content': 'YES'}]'
+
+Model's response: NO
+
+yes_logit: 23.315387725830078
+no_logit: 25.597373962402344
+Yes probability: 0.09262587875127792
+No probability: 0.9073740839958191
+=== END OF EXAMPLE 13 ===
+
+
+
+=========== EXAMPLE 14 ===========
+
+True completion: '[{'role': 'assistant', 'content': 'YES'}]'
+
+Model's response: NO
+
+yes_logit: 22.326820373535156
+no_logit: 27.16642951965332
+Yes probability: 0.00784806627780199
+No probability: 0.9921519756317139
+=== END OF EXAMPLE 14 ===
+
+
+
+=========== EXAMPLE 15 ===========
+
+True completion: '[{'role': 'assistant', 'content': 'NO'}]'
+
+Model's response: NO
+
+yes_logit: 20.532453536987305
+no_logit: 27.060792922973633
+Yes probability: 0.0014592981897294521
+No probability: 0.9985406994819641
+=== END OF EXAMPLE 15 ===
+
+
+
+=========== EXAMPLE 16 ===========
+
+True completion: '[{'role': 'assistant', 'content': 'NO'}]'
+
+Model's response: NO
+
+yes_logit: 23.00899887084961
+no_logit: 26.486509323120117
+Yes probability: 0.029958942905068398
+No probability: 0.970041036605835
+=== END OF EXAMPLE 16 ===
+
+
+
+=========== EXAMPLE 17 ===========
+
+True completion: '[{'role': 'assistant', 'content': 'NO'}]'
+
+Model's response: NO
+
+yes_logit: 22.09076690673828
+no_logit: 27.121198654174805
+Yes probability: 0.00649354699999094
+No probability: 0.9935064315795898
+=== END OF EXAMPLE 17 ===
+
+
+
+=========== EXAMPLE 18 ===========
+
+True completion: '[{'role': 'assistant', 'content': 'NO'}]'
+
+Model's response: NO
+
+yes_logit: 22.830379486083984
+no_logit: 26.395538330078125
+Yes probability: 0.027514047920703888
+No probability: 0.9724859595298767
+=== END OF EXAMPLE 18 ===
+
+
+
+=========== EXAMPLE 19 ===========
+
+True completion: '[{'role': 'assistant', 'content': 'NO'}]'
+
+Model's response: NO
+
+yes_logit: 22.07045555114746
+no_logit: 27.288515090942383
+Yes probability: 0.005388637538999319
+No probability: 0.994611382484436
+=== END OF EXAMPLE 19 ===
+
+Model: devstral-small
+Number of positive examples: 0
+Number of negative examples: 0
+Number of true positive predictions: 0
+Number of true negative predictions: 0
+Number of false positive predictions: 0
+Number of false negative predictions: 0
+Number of not yes or no predictions: 2
+Number of total predictions: 2
+Accuracy: 0.00%
+
+Model: deepseek-v3
+Number of positive examples: 0
+Number of negative examples: 0
+Number of true positive predictions: 0
+Number of true negative predictions: 0
+Number of false positive predictions: 0
+Number of false negative predictions: 0
+Number of not yes or no predictions: 3
+Number of total predictions: 3
+Accuracy: 0.00%
+
+Model: kimi-k2
+Number of positive examples: 0
+Number of negative examples: 0
+Number of true positive predictions: 0
+Number of true negative predictions: 0
+Number of false positive predictions: 0
+Number of false negative predictions: 0
+Number of not yes or no predictions: 7
+Number of total predictions: 7
+Accuracy: 0.00%
+
+Model: claude-sonnet-4
+Number of positive examples: 0
+Number of negative examples: 0
+Number of true positive predictions: 0
+Number of true negative predictions: 0
+Number of false positive predictions: 0
+Number of false negative predictions: 0
+Number of not yes or no predictions: 6
+Number of total predictions: 6
+Accuracy: 0.00%
+
+Model: claude-3-5-haiku
+Number of positive examples: 0
+Number of negative examples: 0
+Number of true positive predictions: 0
+Number of true negative predictions: 0
+Number of false positive predictions: 0
+Number of false negative predictions: 0
+Number of not yes or no predictions: 2
+Number of total predictions: 2
+Accuracy: 0.00%
+
+Total number of positive examples: 0
+Total number of negative examples: 0
+Overall true positive rate: 0.00%
+Overall true negative rate: 0.00%
+Overall false positive rate: 0.00%
+Overall false negative rate: 0.00%
+Overall not yes or no rate: 100.00%
+Overall accuracy: 0.00%
