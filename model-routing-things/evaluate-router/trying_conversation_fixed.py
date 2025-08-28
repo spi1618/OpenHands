@@ -8,9 +8,9 @@ import numpy as np
 from typing import Dict
 
 # Load your trained model  
-path_to_checkpoint = "/data/user_data/sophiapi/checkpoints/stupid_chat-template_qwen3_router_model-5_instance-100_pruned-4_with-ids_by-example_max-length-16384/checkpoint-1600"
+path_to_checkpoint = "/data/user_data/sophiapi/checkpoints/stupid_no-oh-prompt_qwen3_router_model-5_instance-100_max-length-16384/checkpoint-600"
 # Give examples from the validation set
-path_to_validation_set = "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned-partial-trajectories_2025-08-26T15-26-45/1000-samples/20250827_172632_val_chat-template_max-len-16384.jsonl"
+path_to_validation_set = "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned_no-oh-prompt_partial-trajectories_2025-08-28T00-49-09/1000-samples/20250828_005920_val_chat-template-v2_max-len-16384.jsonl"
 
 
 def find_model_from_prompt(prompt):
@@ -18,7 +18,7 @@ def find_model_from_prompt(prompt):
     # The model name will be the first word after the string "### Candidate model\n[M] ", delimited by spaces and newlines
     # For example: "### Candidate model\n[M] deepseek-v3\n\n" --> "deepseek-v3"
     # If the string is not found, return None
-    prompt = prompt[0]['content']
+    prompt = prompt[2]['content']
     if "### Candidate model\n[M] " in prompt:
         return prompt.split("### Candidate model\n[M] ")[1].split("\n")[0]
     else:
@@ -60,7 +60,7 @@ output_f.write(f"=" * 80 + "\n\n")
 
 with open(path_to_validation_set, "r") as f:
     # Read all lines and randomly select num_examples
-    num_examples = 20
+    num_examples = 200
     stats = {}
     all_lines = f.readlines()
     selected_lines = random.sample(all_lines, min(num_examples, len(all_lines)))
@@ -75,11 +75,12 @@ with open(path_to_validation_set, "r") as f:
         example = json.loads(line)
         # print(f"example['prompt']: {example['prompt']}\n")
         # print(f"example['completion']: {example['completion']}\n")
-        prompt = [{"role": "user", "content": example['prompt']}]  # CHANGEBACK # IS THIS STILL NECESSARY? the taakenizer already applies the chat template to input messages.
+        # prompt = [{"role": "user", "content": example['prompt']}]  # CHANGEBACK # IS THIS STILL NECESSARY? the taakenizer already applies the chat template to input messages.
         
         model_name = find_model_from_prompt(example['prompt'])
         if model_name is None:
-            continue
+            # continue
+            model_name = "UNKNOWN_MODEL"
         if model_name not in stats:
             stats[model_name] = {"true_positive": 0, "true_negative": 0, "false_positive": 0, "false_negative": 0, "not_yes_or_no": 0, "total": 0}
         
@@ -90,15 +91,16 @@ with open(path_to_validation_set, "r") as f:
         # TODO: not sure the tokenizer is strictly necessary here since it was already set up in the creation of pipe
         # also i think this doesn't need the chat template?
         response = pipe(example['prompt'], max_new_tokens=1, tokenizer=tokenizer)
+        # response = pipe(random.choice(random_stuff), max_new_tokens=1, tokenizer=tokenizer)
         
-        # # print(f"response: {response}\n\n")
+        # print(f"response: {response}\n\n")
         # output_f.write(f"response: {response}\n\n")
         # print(f"response shape: {len(response)}")
         # print(f"response[0] keys: {response[0].keys()}")
         # print(f"response[0]['generated_text']: {response[0]['generated_text']}")
         # print(f"response[0]['generated_text'] length: {len(response[0]['generated_text'])}")
         
-        model_yes_or_no = response[0]['generated_text'][1]['content']
+        model_yes_or_no = response[0]['generated_text'][3]['content']
         
         print(f"\nTrue completion: '{example['completion']}'\n")
         print(f"\nModel's response: '{model_yes_or_no}'\n")
@@ -147,16 +149,16 @@ with open(path_to_validation_set, "r") as f:
         output_f.write(f"No probability: {no_prob}\n")
         
         # Update stats
-        if model_yes_or_no == "YES" and example['completion'] == "YES":
+        if model_yes_or_no == "YES" and example['completion'][0]['content'] == "YES":
             stats[model_name]["true_positive"] += 1
             
-        elif model_yes_or_no == "NO" and example['completion'] == "NO":
+        elif model_yes_or_no == "NO" and example['completion'][0]['content'] == "NO":
             stats[model_name]["true_negative"] += 1
             
-        elif model_yes_or_no == "YES" and example['completion'] == "NO":
+        elif model_yes_or_no == "YES" and example['completion'][0]['content'] == "NO":
             stats[model_name]["false_positive"] += 1
             
-        elif model_yes_or_no == "NO" and example['completion'] == "YES":
+        elif model_yes_or_no == "NO" and example['completion'][0]['content'] == "YES":
             stats[model_name]["false_negative"] += 1
             
         else:
