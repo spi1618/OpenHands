@@ -82,7 +82,7 @@ with open(path_to_validation_set, "r") as f:
             # continue
             model_name = "UNKNOWN_MODEL"
         if model_name not in stats:
-            stats[model_name] = {"true_positive": 0, "true_negative": 0, "false_positive": 0, "false_negative": 0, "not_yes_or_no": 0, "total": 0}
+            stats[model_name] = {"true_positive": 0, "true_negative": 0, "false_positive": 0, "false_negative": 0, "not_yes_or_no": 0, "predicted_yes": 0, "predicted_no": 0, "real_success": 0, "real_failure": 0, "total": 0}
         
         print(f"\n\n=========== EXAMPLE {i} ===========\n")
         output_f.write(f"\n\n=========== EXAMPLE {i} ===========\n")
@@ -102,8 +102,10 @@ with open(path_to_validation_set, "r") as f:
         
         model_yes_or_no = response[0]['generated_text'][3]['content']
         
+        print(f"\nModel name: {model_name}\n")
         print(f"\nTrue completion: '{example['completion']}'\n")
         print(f"\nModel's response: '{model_yes_or_no}'\n")
+        output_f.write(f"\nModel name: {model_name}\n")
         output_f.write(f"\nTrue completion: '{example['completion']}'\n")
         output_f.write(f"\nModel's response: {model_yes_or_no}\n") # Print the model's yes or no verdict
         
@@ -149,6 +151,15 @@ with open(path_to_validation_set, "r") as f:
         output_f.write(f"No probability: {no_prob}\n")
         
         # Update stats
+        if example['completion'][0]['content'] == "YES":
+            stats[model_name]["real_success"] += 1
+        elif example['completion'][0]['content'] == "NO":
+            stats[model_name]["real_failure"] += 1
+        if model_yes_or_no == "YES":
+            stats[model_name]["predicted_yes"] += 1
+        elif model_yes_or_no == "NO":
+            stats[model_name]["predicted_no"] += 1
+        
         if model_yes_or_no == "YES" and example['completion'][0]['content'] == "YES":
             stats[model_name]["true_positive"] += 1
             
@@ -173,13 +184,17 @@ with open(path_to_validation_set, "r") as f:
         output_f.write(f"Model: {model_name}\n")
         output_f.write(f"Number of positive examples: {model_stats['true_positive'] + model_stats['false_negative']}\n")
         output_f.write(f"Number of negative examples: {model_stats['true_negative'] + model_stats['false_positive']}\n")
+        output_f.write(f"Proportion of positive examples: {(model_stats['real_success'] / model_stats['total']) * 100:.2f}%\n")
+        output_f.write(f"Proportion of negative examples: {(model_stats['real_failure'] / model_stats['total']) * 100:.2f}%\n")
         output_f.write(f"Number of true positive predictions: {model_stats['true_positive']}\n")
         output_f.write(f"Number of true negative predictions: {model_stats['true_negative']}\n")
         output_f.write(f"Number of false positive predictions: {model_stats['false_positive']}\n")
         output_f.write(f"Number of false negative predictions: {model_stats['false_negative']}\n")
         output_f.write(f"Number of not yes or no predictions: {model_stats['not_yes_or_no']}\n")
         output_f.write(f"Number of total predictions: {model_stats['total']}\n")
-        output_f.write(f"Accuracy: {(model_stats['true_positive'] + model_stats['true_negative'])/model_stats['total']*100:.2f}%\n\n")
+        output_f.write(f"Accuracy: {(model_stats['true_positive'] + model_stats['true_negative'])/model_stats['total']*100:.2f}%\n")
+        output_f.write(f"Router's average confidence in model (predicted yes out of total): {(model_stats['predicted_yes'] / model_stats['total']) * 100:.2f}%\n")
+        output_f.write(f"Router's average disbelief in model (predicted no out of total): {(model_stats['predicted_no'] / model_stats['total']) * 100:.2f}%\n\n")
         
         # # Print to console
         # print(f"Model: {model_name}")
