@@ -56,21 +56,6 @@ else:
     router_inference = RouterInference()
 
 # FastAPI schema
-class TrajectoryStep(BaseModel):
-    source: str  # "user", "agent", "system"
-    content: Optional[str] = None
-    observation: Optional[str] = None
-    action: Optional[str] = None
-
-class SWEBenchRoutingRequest(BaseModel):
-    partial_trajectory: List[TrajectoryStep]
-    user_query: Optional[str] = Field(default=None, description="Current user query/instruction")
-
-class SWEBenchRoutingResponse(BaseModel):
-    selected_model: str
-    confidence: float
-    all_probabilities: Dict[str, float]
-    reasoning: Optional[str] = None
 
 class ChatMessage(BaseModel):
     role: str  # "system", "user", "assistant"
@@ -173,6 +158,33 @@ def debug_json_content(data, max_preview_length: int = 200) -> str:
 # FastAPI app
 app = FastAPI(title="SWE-Bench Router", version="0.1")
 
+def convert_messages_to_partial_trajectory(messages: List[ChatMessage]) -> List[Dict]:
+    """
+    Convert a list of messages to a partial trajectory in the format expected by the router model.
+    Does NOT do truncation and DOES NOT add in the prompt for the router model.
+    
+    Still in progress, do not use yet
+    """
+    partial_trajectory = []
+    for msg in messages:
+        partial_trajectory.append({"source": msg.role, "message": msg.content})
+    
+    # Rule: get rid of the first message (role='system'), just very long OpenHands system message
+    # Rule: for the second message (role='user'), only extract the content between the following strings (DO NOT include the strings themselves):
+    #     start_bookend: "--------------------- NEW TASK DESCRIPTION ---------------------\n"
+    #     end_bookend: "\n--------------------- END OF NEW TASK DESCRIPTION ---------------------"
+    # Rule: get rid of the all the rest of the messages where role='user' (these are basically the observations) 
+    
+        # if msg.role == "user":
+        #     partial_trajectory.append({"source": "user", "content": msg.content})
+        # elif msg.role == "assistant":
+        #     partial_trajectory.append({"source": "agent", "content": msg.content})
+        # elif msg.role == "system":
+        #     partial_trajectory.append({"source": "system", "content": msg.content})
+    
+    
+    
+
 @app.post("/v1/chat/completions", response_model=ChatResponse)
 async def route_chat(req: ChatRequest):
     """Proxy the chat completion to the routed model."""
@@ -180,14 +192,14 @@ async def route_chat(req: ChatRequest):
     
     print(f"######## [DEBUG] RECEIVED REQUEST ########")
     
+    print(f"\n\n\n\n[DEBUG] Request: {req}\n\n\n\n")
+    
     # Debug: Print the request's messages
     print(f"[DEBUG] Request messages: {debug_json_content(req.messages)}")
     
+    # Construct the trajectory from the request messages
     trajectory_dicts = []
     for msg in req.messages:
-        # TODO: fix this, it's not detecting the sources properly, should be user/assistant/system
-        # im telling you this is some openai bullshit, we need to fix this
-        # I think this is fine now??? We're just replacing "assistant" with "agent"
         if msg.role == "user":
             trajectory_dicts.append({"source": "user", "content": msg.content})
         elif msg.role == "assistant":
@@ -199,6 +211,8 @@ async def route_chat(req: ChatRequest):
     print(f"[DEBUG] Raw trajectory: {debug_json_content(trajectory_dicts)}")
     # Debug: Print the length of trajectory_dicts
     print(f"[DEBUG] Raw trajectory length: {len(trajectory_dicts)}")
+    
+    # sys.exit(0) # TODO: REMOVE THIS LMAO
     
     # Use router to select the best model
     if RANDOM_MODE:
@@ -299,19 +313,7 @@ async def health():
         "random_mode_enabled": RANDOM_MODE
     }
 
-# Test endpoint
-@app.post("/test_router")
-async def test_router():
-    # TODO: this is broken. please don't use it.
-    """Test the router with a sample trajectory."""
-    sample_trajectory = [
-        TrajectoryStep(source="user", content="Fix the bug in the login function"),
-        TrajectoryStep(source="agent", content="I'll help you fix the login function. Let me first examine the code."),
-        TrajectoryStep(source="agent", observation="Found login.py file with authentication logic")
-    ]
-    
-    req = SWEBenchRoutingRequest(partial_trajectory=sample_trajectory)
-    return await route_swe_bench(req)
+
 
 if __name__ == "__main__":
     import uvicorn
