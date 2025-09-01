@@ -7,6 +7,7 @@ Uses the fine-tuned model to predict which LLM is most likely to succeed.
 import json
 import torch
 import numpy as np
+import re
 from typing import List, Dict, Tuple
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
@@ -63,7 +64,6 @@ class RouterInference:
     # ============== SOME HELPER FUNCTIONS ==============
     
     def safe_json_dumps(self, obj):
-        # TODO: set sort_keys to False once you've also set it to false in convert_raw_to_pc.py
         try:
             return json.dumps(obj, sort_keys=False, default=str)
         except:
