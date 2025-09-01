@@ -41,11 +41,26 @@ CHAT_TEMPLATE_TRAIN_DATASET_PATH_16384 = "/home/sophiapi/model-routing/OpenHands
 # about 200 samples
 CHAT_TEMPLATE_VAL_DATASET_PATH_16384 = "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned-partial-trajectories_2025-08-26T15-26-45/1000-samples/20250827_172632_val_chat-template_max-len-16384.jsonl"
 
+# about 800 samples
+NO_OH_PROMPT_TRAIN_DATASET_PATH_16384 = "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned_no-oh-prompt_partial-trajectories_2025-08-28T00-49-09/1000-samples/20250828_005816_train_chat-template-v2_max-len-16384.jsonl"
+# about 200 samples
+NO_OH_PROMPT_VAL_DATASET_PATH_16384 = "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned_no-oh-prompt_partial-trajectories_2025-08-28T00-49-09/1000-samples/20250828_005920_val_chat-template-v2_max-len-16384.jsonl"
+
+# about 16000 samples
+NO_OH_PROMPT_TRAIN_DATASET_PATH_16384_20000 = "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned_no-oh-prompt_partial-trajectories_2025-08-28T00-49-09/20000-samples/20250828_095046_train_chat-template-v2_max-len-16384.jsonl"
+# about 4000 samples
+NO_OH_PROMPT_VAL_DATASET_PATH_16384_20000 = "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned_no-oh-prompt_partial-trajectories_2025-08-28T00-49-09/20000-samples/20250828_095623_val_chat-template-v2_max-len-16384.jsonl"
+
+# about 18000 samples
+CONSISTENT_TRAIN_DATASET_PATH_16384_20000 = "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_consistent_cleaned_no-oh-prompt_partial-trajectories_2025-08-30T19-46-44/20000-samples/20250831_141541_train_chat-template-v2_max-len-16384.jsonl"
+# about 2000 samples
+CONSISTENT_VAL_DATASET_PATH_16384_20000 = "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_consistent_cleaned_no-oh-prompt_partial-trajectories_2025-08-30T19-46-44/20000-samples/20250831_141405_val_chat-template-v2_max-len-16384.jsonl"
+
 ######################### NEW STUFF #########################################################
 
 ##### SET THIS BEFORE EVERY RUN AND CHECK THAT THE VALUES ARE CORRECT + MATCH THE TRAINING DATASET #####
-PATH_TO_TRAIN_DATASET = CHAT_TEMPLATE_TRAIN_DATASET_PATH_16384
-PATH_TO_VALID_DATASET = CHAT_TEMPLATE_VAL_DATASET_PATH_16384
+PATH_TO_TRAIN_DATASET = CONSISTENT_TRAIN_DATASET_PATH_16384_20000
+PATH_TO_VALID_DATASET = CONSISTENT_VAL_DATASET_PATH_16384_20000
 
 # This should match the datasets
 MAX_TOKENS = 16384
@@ -57,8 +72,8 @@ EVAL_BATCH_SIZE = 1
 NUM_EPOCHS = 2
 
 # CHANGE THIS IF YOU CHANGE THE DATASET (esp. if you use an unbalanced dataset or notokens)
-CHECKPOINT_DIR = f"/data/user_data/sophiapi/checkpoints/stupid_chat-template_qwen3_router_model-5_instance-100_pruned-4_with-ids_by-example_max-length-{MAX_TOKENS}"
-WANDB_NAME = f"qwen3-router-sft-stupid-chat-template-model-5-instance-100-pruned-4-with-ids-by-example-max-length-{MAX_TOKENS}"
+CHECKPOINT_DIR = f"/data/user_data/sophiapi/checkpoints/stupid_consistent_qwen3_router_model-5_instance-100_max-length-{MAX_TOKENS}_samples-20000"
+WANDB_NAME = f"qwen3-router-sft-stupid-consistent-model-5-instance-100-max-length-{MAX_TOKENS}-samples-20000"
 
 # Load local JSONL files  
 train_dataset = load_dataset("json", data_files=PATH_TO_TRAIN_DATASET, split="train")  
@@ -149,6 +164,8 @@ training_args = SFTConfig(
     max_length=MAX_TOKENS,
     bf16=True,
     use_liger_kernel = True,
+    optim = "adamw_torch_fused",
+    gradient_accumulation_steps = 8,
     model_init_kwargs = {
         "attn_implementation": "flash_attention_2",
         "trust_remote_code": True,

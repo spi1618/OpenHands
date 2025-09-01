@@ -4,8 +4,8 @@
 import json
 import sys
 
-TRAIN_PATH = "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned_no-oh-prompt_partial-trajectories_2025-08-28T00-49-09/20000-samples/train.jsonl"
-VAL_PATH = "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned_no-oh-prompt_partial-trajectories_2025-08-28T00-49-09/20000-samples/val.jsonl"
+TRAIN_PATH = "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_consistent_cleaned_no-oh-prompt_partial-trajectories_2025-08-30T19-46-44/20000-samples/train.jsonl"
+VAL_PATH = "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_consistent_cleaned_no-oh-prompt_partial-trajectories_2025-08-30T19-46-44/20000-samples/val.jsonl"
 
 def load_instance_ids(file_path):
     """Load instance IDs from a JSONL file."""

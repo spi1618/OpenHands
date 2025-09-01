@@ -166,6 +166,7 @@ wandb.log({
 ########## UNCOMMENT THIS BLOCK ###########
 
 # Configure training  
+# TODO: add a max_length argument?
 training_args = SFTConfig(  
     output_dir=CHECKPOINT_DIR,  
     per_device_train_batch_size=TRAIN_BATCH_SIZE,  
@@ -178,7 +179,7 @@ training_args = SFTConfig(
     logging_steps=10,  
     completion_only_loss=True, 
     max_length=MAX_TOKENS, 
-    report_to=["wandb"],
+    report_to=["wandb"], 
 )  
   
 # Initialize trainer  
@@ -369,7 +370,7 @@ else:
 # Train the model  
 trainer.train()
 
-# TODO: check this? idk what it does
+# TODO: check this?
 # metrics = trainer.evaluate()
 # wandb.log(metrics)
 

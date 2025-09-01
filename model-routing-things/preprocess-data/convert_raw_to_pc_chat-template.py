@@ -18,18 +18,10 @@ from trl import SFTTrainer, SFTConfig, apply_chat_template
 
 # Example usage:
 
-# poetry run python3 ../convert_raw_to_pc_chat-template.py \
-# --original-file /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned-partial-trajectories_2025-08-26T15-26-45/1000-samples/val.jsonl \
-# --pc-output-dir /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned-partial-trajectories_2025-08-26T15-26-45/1000-samples \
-# --hf-output-dir /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned-partial-trajectories_2025-08-26T15-26-45/1000-samples \
-# --base-model Qwen/Qwen2.5-0.5B-Instruct \
-# --max-length 8192 \
-# --max-filter-tokens 32000
-
 # python3 convert_raw_to_pc_chat-template.py \
-# --original-file /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned_no-oh-prompt_partial-trajectories_2025-08-28T00-49-09/1000-samples/val.jsonl \
-# --pc-output-dir /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned_no-oh-prompt_partial-trajectories_2025-08-28T00-49-09/1000-samples \
-# --hf-output-dir /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned_no-oh-prompt_partial-trajectories_2025-08-28T00-49-09/1000-samples \
+# --original-file /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_consistent_cleaned_no-oh-prompt_partial-trajectories_2025-08-30T19-46-44/20000-samples/train.jsonl \
+# --pc-output-dir /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_consistent_cleaned_no-oh-prompt_partial-trajectories_2025-08-30T19-46-44/20000-samples/ \
+# --hf-output-dir /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_consistent_cleaned_no-oh-prompt_partial-trajectories_2025-08-30T19-46-44/20000-samples/ \
 # --base-model Qwen/Qwen2.5-0.5B-Instruct \
 # --max-length 16384 \
 # --max-filter-tokens 32000
@@ -79,7 +71,37 @@ def generate_timestamped_filename(base_name: str, max_length: int, extension: st
         extension = '.' + extension
     return f"{timestamp}_{base_name}_chat-template-v2_max-len-{max_length}{extension}"
 
+# Function that takes a partial trajectory and returns (the partial trajectory sans token count, the next token count of the last step)
+def scalp_token_counts_from_partial_trajectory(partial_trajectory: List[Dict]) -> tuple[List[Dict], int]:
+    next_token_count = int(partial_trajectory[-1]["next_step_output_tokens"]) # this is a string
+    partial_trajectory_scalped = []
+    for i in range(len(partial_trajectory)):
+        event = {}
+        event["source"] = partial_trajectory[i]["source"]
+        event["message"] = partial_trajectory[i]["message"]
+        if "model" in event.keys():
+            event["model"] = partial_trajectory[i]["model"]
+        partial_trajectory_scalped.append(event)
+    return partial_trajectory_scalped, next_token_count
 
+def bucket_from_tokens(n: int) -> int:
+    # Lower bound inclusive, upper bound exclusive, bucket 8 unbounded
+    if n < 64: return 1
+    if n < 128: return 2
+    if n < 256: return 3
+    if n < 384: return 4
+    if n < 512: return 5
+    if n < 896: return 6
+    if n < 1024: return 7
+    return 8
+
+def make_assistant_json(successfully_patched: bool, next_token_count: int) -> str:
+    payload = {
+        "success": "YES" if successfully_patched else "NO",
+        "output_tokens_bucket": f"Bucket {bucket_from_tokens(next_token_count)}"
+    }
+    # One-line JSON, no trailing newline
+    return json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
 
 def build_partial_trajectory_with_truncation(partial_trajectory: List[Dict], max_traj_tokens: int, tokenizer=None):
     """
@@ -110,16 +132,17 @@ def build_partial_trajectory_with_truncation(partial_trajectory: List[Dict], max
     return truncated_trajectory, was_truncated
     
     
-def convert_dataset_format(raw_data: List[Dict], max_length: int = 8192, max_filter_tokens: int = 32000, tokenizer=None) -> List[Dict]:
+def convert_dataset_format(raw_data: List[Dict], max_length: int = 8192, max_filter_tokens: int = 32000, tokenizer=None, output_file=None) -> int:
     """
     Convert raw dataset format to TRL-compatible prompt-completion format.
+    Saves the result in PC format to output_file.
     
     Raw format: (model, instance_id, successfully_patched, partial_trajectory)
     Target format: (prompt, completion)
     
     Includes sophisticated truncation logic to preserve essential structure while fitting within max_length.
     """
-    converted_data = []
+    converted_count = 0
     skipped_count = 0
     truncated_count = 0
     coarse_filtered_count = 0
@@ -127,11 +150,41 @@ def convert_dataset_format(raw_data: List[Dict], max_length: int = 8192, max_fil
     
     print(f"DEBUG: Starting dataset conversion with max_length={max_length}, max_filter_tokens={max_filter_tokens}")
     
+    # Compute the number of tokens in my (yes me, long-suffering summer intern) part of the prompt
+    with open("/home/sophiapi/model-routing/system_prompt.txt", "r", encoding="utf-8") as f:
+        system_part = f.read()
+    # system_part = (
+    #     "You predict whether the agent or assistant will ultimately solve the SWE issue successfully given the partial trajectory so far and the candidate model that will be used to attempt the rest of the task.\n"
+    #     "You also predict how many output tokens the candidate model will generate on the immediate next step by\n"
+    #     "Respond with YES or NO followed by ... For example, if you predict that the candidate model will be successful and will generate 100 output tokens, you should respond with 'Success: YES, Output tokens: Bucket 8'.\n"
+    #     # TODO: FIX THIS AND SET UP THE BUCKETS
+    #     "The partial trajectory contains information about the agent or assistant's actions, and the names of the models that they used to take the actions.\n"
+    #     "The intermediate steps in the partial trajectory may be omitted for brevity.\n"
+    #     "The user will provide the partial trajectory.\n"
+    # )
+    trajectory_header = "### Partial trajectory:\n\n\n"
+    model_part = f"### Candidate model\n[M] FILLER-TEXT-TO-UPPER-BOUND-LENGTH-OF-MODEL-NAME\n\n"
+    question_part = "### Will this agent eventually succeed if the rest of the task is attempted with the candidate model? Into which of the 8 output token buckets will the candidate model's immediate next step fall?"
+    
+    system_tokens = len(tokenizer.encode(system_part))
+    trajectory_header_tokens = len(tokenizer.encode(trajectory_header))
+    model_tokens = len(tokenizer.encode(model_part))
+    question_tokens = len(tokenizer.encode(question_part))
+    
+    # Reserve space for essential parts
+    reserved_tokens = system_tokens + trajectory_header_tokens + model_tokens + question_tokens
+    
     for i, item in enumerate(raw_data):
         # Extract fields
         model_name = item["model"]
         successfully_patched = item["successfully_patched"]
         partial_trajectory = item["partial_trajectory"]
+        
+        # Scalp the partial trajectory
+        partial_trajectory, next_token_count = scalp_token_counts_from_partial_trajectory(partial_trajectory)
+        
+        # Construct model_part
+        model_part = f"### Candidate model\n[M] {model_name}\n\n"
         
         # Coarse filter: skip extremely long examples that would lose too much context
         if tokenizer:
@@ -147,26 +200,6 @@ def convert_dataset_format(raw_data: List[Dict], max_length: int = 8192, max_fil
             raise ValueError("No tokenizer provided")
         
         
-        # Compute the number of tokens in my (yes me, long-suffering summer intern) part of the prompt
-        system_part = (
-            "You predict whether the agent or assistant will ultimately solve the SWE issue successfully given the partial trajectory so far and the candidate model that will be used to attempt the rest of the task.\n"
-            "Respond with YES or NO only.\n"
-            "The partial trajectory contains information about the agent or assistant's actions, observations, and interactions with the user or environment.\n"
-            "The partial trajectory may be truncated to the most recent information.\n"
-            "The user will provide the partial trajectory.\n"
-        )
-        trajectory_header = "### Partial trajectory:\n\n\n"
-        model_part = f"### Candidate model\n[M] {model_name}\n\n"
-        question_part = "### Will this agent eventually succeed if the rest of the task is attempted with the candidate model?\n"
-        
-        system_tokens = len(tokenizer.encode(system_part))
-        trajectory_header_tokens = len(tokenizer.encode(trajectory_header))
-        model_tokens = len(tokenizer.encode(model_part))
-        question_tokens = len(tokenizer.encode(question_part))
-        
-        # Reserve space for essential parts
-        reserved_tokens = system_tokens + trajectory_header_tokens + model_tokens + question_tokens
-        
         # Calculate how much space we have for trajectory content
         max_trajectory_tokens = max_length - reserved_tokens - 100  # Leave some buffer
     
@@ -175,7 +208,9 @@ def convert_dataset_format(raw_data: List[Dict], max_length: int = 8192, max_fil
         truncated_trajectory, was_truncated = build_partial_trajectory_with_truncation(
             partial_trajectory, max_trajectory_tokens, tokenizer
         )
-        completion = "YES" if successfully_patched else "NO"
+        
+        # Build completion
+        completion = make_assistant_json(successfully_patched, next_token_count)
         
         if was_truncated:
             truncated_count += 1
@@ -193,19 +228,27 @@ def convert_dataset_format(raw_data: List[Dict], max_length: int = 8192, max_fil
             "role": "system",
             "content": model_part + question_part
         }
-        
-        converted_data.append({
+                
+        item = {
             "prompt": [prompt_part1, prompt_part2, prompt_part3],
             "completion": [{"role": "assistant", "content": completion}]
-        })
+        }
+        
+        # Save to PC format - APPEND DON'T OVERWRITE
+        if output_file:
+            with open(output_file, "a") as f:
+                f.write(json.dumps(item) + "\n")
+                
+        converted_count += 1
         
     print(f"DEBUG: Final conversion stats:")
-    print(f"  - Converted: {len(converted_data)} examples")
+    print(f"  - Converted: {converted_count} examples")
     print(f"  - Truncated: {truncated_count} examples")
     print(f"  - Coarse filtered: {coarse_filtered_count} examples")
     print(f"  - Total processed: {len(raw_data)} examples")
     
-    return converted_data
+    
+    return converted_count
     
 
 def load_and_prepare_dataset(original_file: str, pc_output_dir: str, hf_output_dir: str, max_length: int, max_filter_tokens: int, tokenizer=None):
@@ -227,12 +270,7 @@ def load_and_prepare_dataset(original_file: str, pc_output_dir: str, hf_output_d
     # print(f"  - HF output: {hf_output_file}")
     
     # Convert to TRL format with tokenizer for smart truncation
-    converted_data = convert_dataset_format(raw_data, max_length, max_filter_tokens, tokenizer)
-    
-    # Save to PC format
-    with open(pc_output_file, "w") as f:
-        for item in converted_data:
-            f.write(json.dumps(item) + "\n")
+    converted_data_count = convert_dataset_format(raw_data, max_length, max_filter_tokens, tokenizer, pc_output_file)
     
     return
 
