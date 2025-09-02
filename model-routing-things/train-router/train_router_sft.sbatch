@@ -18,8 +18,8 @@ export CUDA_VISIBLE_DEVICES=0
 
 # ───── Training configuration ─────────────────────────────────────────
 MODEL_NAME="model-5-instance-100-pruned-4-with-ids-by-example"
-TRAIN_FILE="/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/router_train_model-5_instance-100_pruned-4_with-ids_by-example.jsonl"
-VALID_FILE="/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/router_valid_model-5_instance-100_pruned-4_with-ids_by-example.jsonl"
+TRAIN_FILE="/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/router_train_model-5_instance-100_pruned-4_with-ids_by-example_sample400.jsonl"
+VALID_FILE="/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/router_valid_model-5_instance-100_pruned-4_with-ids_by-example_sample100.jsonl"
 OUTPUT_DIR="/data/user_data/sophiapi/checkpoints/qwen3_router_model-5_instance-100_pruned-4_with-ids_by-example"
 
 # ───── Make the checkpoints directory if it doesn't exist ───────────────
@@ -30,11 +30,22 @@ mkdir -p /data/user_data/$USER/checkpoints
 cd ~/model-routing/OpenHands
 
 # ───── Activate Poetry environment and run training ───────────────────
-poetry run python ~/model-routing/train_router_sft.py \
+# Training parameters:
+# - batch-size 1: Conservative batch size for memory management
+# - epochs 2: Standard fine-tuning duration
+# - learning-rate 2e-5: Conservative learning rate for stable training
+# - max-length 8192: Maximum sequence length (matches Qwen3-0.6B context window)
+# - max-filter-tokens 32000: Coarse filter threshold for extremely long examples
+poetry run python ~/model-routing/train_router_sft_fixed.py \
     --model-name "$MODEL_NAME" \
     --train-file "$TRAIN_FILE" \
     --valid-file "$VALID_FILE" \
-    --output-dir "$OUTPUT_DIR"
+    --output-dir "$OUTPUT_DIR" \
+    --batch-size 1 \
+    --epochs 2 \
+    --learning-rate 2e-5 \
+    --max-length 8192 \
+    --max-filter-tokens 32000
 
 # ───── Post-run sync / cleanup (optional) ──────────────────────────────
 # The model will be saved to checkpoints/qwen3_router_json

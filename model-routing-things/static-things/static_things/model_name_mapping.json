@@ -1,0 +1,7 @@
+{
+    "claude-3-5-haiku": "neulab/claude-3-5-haiku-20241022",
+    "claude-sonnet-4": "neulab/claude-sonnet-4-20250514",
+    "deepseek-v3": "neulab/deepseek-v3",
+    "devstral-small": "neulab/devstral-small-2505",
+    "kimi-k2": "neulab/kimi-k2-0711-preview"
+}

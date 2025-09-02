@@ -1,0 +1,10 @@
+{
+"1": {"lower_bound": 0, "upper_bound": 64, "representative": 50},
+"2": {"lower_bound": 65, "upper_bound": 128, "representative": 96},
+"3": {"lower_bound": 129, "upper_bound": 256, "representative": 192},
+"4": {"lower_bound": 257, "upper_bound": 384, "representative": 320},
+"5": {"lower_bound": 385, "upper_bound": 512, "representative": 448},
+"6": {"lower_bound": 513, "upper_bound": 896, "representative": 704},
+"7": {"lower_bound": 897, "upper_bound": 1024, "representative": 960},
+"8": {"lower_bound": 1025, "upper_bound": "infinity", "representative": 1600}
+}

@@ -19,13 +19,8 @@ from router_inference_stupid import RouterInference
 
 # Configure available models + client
 # DO NOT SIMPLIFY THE NAMES HERE, THEY MUST MATCH THE CONFIG SO WE CAN USE THE LITELLM PROXY SERVER; THEY SHOULD MATCH THE CONFIG FILE
-AVAILABLE_MODELS: List[str] = [
-    "neulab/claude-3-5-haiku-20241022",
-    "neulab/claude-sonnet-4-20250514",
-    "neulab/devstral-small-2505",
-    "neulab/deepseek-v3",
-    "neulab/kimi-k2-0711-preview"
-]
+MODEL_MAPPING = json.load(open("/home/sophiapi/model-routing/model_name_mapping.json", "r"))
+AVAILABLE_MODELS = list(MODEL_MAPPING.values())
 
 # One global OpenAI client configured for the proxy
 _client = OpenAI(
@@ -38,8 +33,8 @@ if _client.api_key is None:
 
 # Initialize the router inference
 print(f"[DEBUG] Starting SWE-Bench Router")
-BASE_MODEL_PATH = os.getenv("BASE_MODEL_PATH", "/data/user_data/sophiapi/checkpoints/stupid_withtokens_qwen3_router_model-5_instance-100_pruned-4_with-ids_by-example")
-ROUTER_CHECKPOINT = os.getenv("ROUTER_CHECKPOINT", "checkpoint-796")
+BASE_MODEL_PATH = os.getenv("BASE_MODEL_PATH", "/data/user_data/sophiapi/checkpoints/stupid_consistent_qwen3_router_model-5_instance-100_max-length-16384_samples-20000")
+ROUTER_CHECKPOINT = os.getenv("ROUTER_CHECKPOINT", "checkpoint-4500")
 MAX_TOKENS = int(os.getenv("MAX_TOKENS", 4096))
 RANDOM_MODE = os.getenv("RANDOM_MODE", "false").lower() == "true"
 
@@ -162,27 +157,42 @@ def convert_messages_to_partial_trajectory(messages: List[ChatMessage]) -> List[
     """
     Convert a list of messages to a partial trajectory in the format expected by the router model.
     Does NOT do truncation and DOES NOT add in the prompt for the router model.
-    
-    Still in progress, do not use yet
     """
-    partial_trajectory = []
-    for msg in messages:
-        partial_trajectory.append({"source": msg.role, "message": msg.content})
-    
     # Rule: get rid of the first message (role='system'), just very long OpenHands system message
     # Rule: for the second message (role='user'), only extract the content between the following strings (DO NOT include the strings themselves):
     #     start_bookend: "--------------------- NEW TASK DESCRIPTION ---------------------\n"
     #     end_bookend: "\n--------------------- END OF NEW TASK DESCRIPTION ---------------------"
     # Rule: get rid of the all the rest of the messages where role='user' (these are basically the observations) 
+    # BASICALLY JUST get rid of all non-assistant messages except for *part of* the first user message
     
-        # if msg.role == "user":
-        #     partial_trajectory.append({"source": "user", "content": msg.content})
-        # elif msg.role == "assistant":
-        #     partial_trajectory.append({"source": "agent", "content": msg.content})
-        # elif msg.role == "system":
-        #     partial_trajectory.append({"source": "system", "content": msg.content})
+    partial_trajectory = []
+    first_user_message_found = False
+    start_bookend = "--------------------- NEW TASK DESCRIPTION ---------------------\n"
+    end_bookend = "\n--------------------- END OF NEW TASK DESCRIPTION ---------------------"
     
+    for msg in messages:
+        if msg.role == "user":
+            if not first_user_message_found:
+                # pull out the content between the bookends
+                start_index = msg.content.find(start_bookend)
+                if start_index == -1:
+                    raise ValueError(f"Start bookend not found in user message: {msg.content}")
+                end_index = msg.content.find(end_bookend)
+                if end_index == -1:
+                    raise ValueError(f"End bookend not found in user message: {msg.content}")
+                partial_trajectory.append({"source": "user", "content": msg.content[start_index:end_index+len(end_bookend)]})
+                first_user_message_found = True
+        elif msg.role == "assistant":
+            partial_trajectory.append({"source": "agent", "content": msg.content})
+
+    # Check that the partial trajectory is not empty
+    if not partial_trajectory:
+        raise ValueError("Partial trajectory is empty")
+    # Check that the partial trajectory's first message is a user message
+    if partial_trajectory[0]["source"] != "user":
+        raise ValueError(f"Partial trajectory's first message is not a user message: {partial_trajectory[0]}")
     
+    return partial_trajectory
     
 
 @app.post("/v1/chat/completions", response_model=ChatResponse)
@@ -192,27 +202,19 @@ async def route_chat(req: ChatRequest):
     
     print(f"######## [DEBUG] RECEIVED REQUEST ########")
     
-    print(f"\n\n\n\n[DEBUG] Request: {req}\n\n\n\n")
+    # print(f"\n\n\n\n[DEBUG] Request: {req}\n\n\n\n")
     
-    # Debug: Print the request's messages
-    print(f"[DEBUG] Request messages: {debug_json_content(req.messages)}")
+    # # Debug: Print the request's messages
+    # print(f"[DEBUG] Request messages: {debug_json_content(req.messages)}")
     
-    # Construct the trajectory from the request messages
-    trajectory_dicts = []
-    for msg in req.messages:
-        if msg.role == "user":
-            trajectory_dicts.append({"source": "user", "content": msg.content})
-        elif msg.role == "assistant":
-            trajectory_dicts.append({"source": "agent", "content": msg.content})
-        elif msg.role == "system":
-            trajectory_dicts.append({"source": "system", "content": msg.content})
-            
-    # Debug: Print of trajectory_dicts
-    print(f"[DEBUG] Raw trajectory: {debug_json_content(trajectory_dicts)}")
-    # Debug: Print the length of trajectory_dicts
-    print(f"[DEBUG] Raw trajectory length: {len(trajectory_dicts)}")
+    trajectory_dicts = convert_messages_to_partial_trajectory(req.messages)
+    # Double check that the trajectory is not empty
+    if not trajectory_dicts:
+        raise ValueError("Trajectory is empty")
     
-    # sys.exit(0) # TODO: REMOVE THIS LMAO
+    # TODO: Get some sort of information about cached vs uncached tokens
+    cached_input_tokens = 0
+    uncached_input_tokens = 0
     
     # Use router to select the best model
     if RANDOM_MODE:
@@ -223,20 +225,15 @@ async def route_chat(req: ChatRequest):
         print(f"[DEBUG] Random selected: {selected_model}")
     elif trajectory_dicts:
         print(f"[DEBUG] Using router inference with {len(trajectory_dicts)} trajectory events")
+        
         # Pass in the raw trajectory to router_inference_stupid.py
-        best_model = router_inference.select_best_model(trajectory_dicts) # best_model is a tuple (model_name, yes_probability)
+        best_model = router_inference.select_best_model(trajectory_dicts, cached_input_tokens, uncached_input_tokens) # best_model is a tuple (model_name, yes_probability)
         print(f"[DEBUG] Router response - best_model: {best_model[0]}, confidence: {best_model[1]}")
         
         # Map internal model names to LiteLLM names
         # The keys should match the model names that router_inference_stupid.py uses
         # The values should match the model names that LiteLLM expects (same as AVAILABLE_MODELS)
-        model_mapping = {
-            "claude-3-5-haiku": "neulab/claude-3-5-haiku-20241022",
-            "claude-sonnet-4": "neulab/claude-sonnet-4-20250514",
-            "deepseek-v3": "neulab/deepseek-v3",
-            "devstral-small": "neulab/devstral-small-2505",
-            "kimi-k2": "neulab/kimi-k2-0711-preview"
-        }
+        model_mapping = json.load(open("/home/sophiapi/model-routing/model_name_mapping.json", "r"))
         selected_model = model_mapping.get(best_model[0], best_model[0])
         print(f"[DEBUG] Router selected: {best_model[0]} -> {selected_model}")
     else:
@@ -252,7 +249,8 @@ async def route_chat(req: ChatRequest):
         print(f"[DEBUG] Calling LiteLLM proxy with model: {selected_model}")
         response = _client.chat.completions.create(
             model=selected_model,
-            messages=[m.model_dump() for m in req.messages],
+            # Note to my future self, because I know you will get confused: KEEP THIS AS IS - it is going to the actual LLM, not the router model
+            messages=[m.model_dump() for m in req.messages], 
             max_tokens=req.max_tokens,
         )
     except BadRequestError as e:

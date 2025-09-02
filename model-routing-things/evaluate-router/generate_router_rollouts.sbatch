@@ -1,6 +1,6 @@
 #!/bin/bash
 # ───── Slurm resource requests ─────────────────────────────────────────
-#SBATCH --job-name=router-rollout           # appears in squeue
+#SBATCH --job-name=router-rollout-stupid           # appears in squeue
 #SBATCH --partition=general             # up to 2 days; preempt for longer
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:0               
@@ -46,7 +46,7 @@ START_ROUTER=${START_ROUTER:-false}
 ANALYZE_DECISIONS=${ANALYZE_DECISIONS:-true}
 RANDOM_MODE=${RANDOM_MODE:-false}
 ROUTER_URL=${ROUTER_URL:-"http://localhost:8123"}
-ROUTER_CHECKPOINT=${ROUTER_CHECKPOINT:-"checkpoint-11500"}
+ROUTER_CHECKPOINT=${ROUTER_CHECKPOINT:-"checkpoint-796"} # this is just in case you haven't started the router yet
 
 echo "=== Configuration ==="
 echo "  Eval Limit: ${EVAL_LIMIT}"
@@ -57,7 +57,7 @@ echo "  Start Router: ${START_ROUTER}"
 echo "  Analyze Decisions: ${ANALYZE_DECISIONS}"
 echo "  Random Mode: ${RANDOM_MODE}"
 echo "  Router URL: ${ROUTER_URL}"
-echo "  Router Checkpoint: ${ROUTER_CHECKPOINT}"
+echo "  Router Checkpoint: ${ROUTER_CHECKPOINT}" # this is just in case you haven't started the router yet
 
 # Build command arguments
 CMD_ARGS=(

@@ -109,7 +109,6 @@ def build_partial_trajectory_with_truncation(partial_trajectory: List[Dict], max
     """
     was_truncated = False
     
-    # Calculate token lengths for essential parts (if tokenizer available)
     if tokenizer:
         # Convert trajectory to text and truncate if needed
         trajectory_text = "\n".join(safe_json_dumps(step) for step in partial_trajectory)
@@ -151,7 +150,7 @@ def convert_dataset_format(raw_data: List[Dict], max_length: int = 8192, max_fil
     print(f"DEBUG: Starting dataset conversion with max_length={max_length}, max_filter_tokens={max_filter_tokens}")
     
     # Compute the number of tokens in my (yes me, long-suffering summer intern) part of the prompt
-    with open("/home/sophiapi/model-routing/system_prompt.txt", "r", encoding="utf-8") as f:
+    with open("/home/sophiapi/model-routing/static_things/system_prompt.txt", "r", encoding="utf-8") as f:
         system_part = f.read()
     # system_part = (
     #     "You predict whether the agent or assistant will ultimately solve the SWE issue successfully given the partial trajectory so far and the candidate model that will be used to attempt the rest of the task.\n"
@@ -204,7 +203,7 @@ def convert_dataset_format(raw_data: List[Dict], max_length: int = 8192, max_fil
         max_trajectory_tokens = max_length - reserved_tokens - 100  # Leave some buffer
     
         
-        # Build prompt with smart truncation
+        # Truncate the partial trajectory
         truncated_trajectory, was_truncated = build_partial_trajectory_with_truncation(
             partial_trajectory, max_trajectory_tokens, tokenizer
         )

@@ -8,9 +8,9 @@ import numpy as np
 from typing import Dict
 
 # Load your trained model  
-path_to_checkpoint = "/data/user_data/sophiapi/checkpoints/stupid_no-oh-prompt_qwen3_router_model-5_instance-100_max-length-16384/checkpoint-600"
+path_to_checkpoint = "/data/user_data/sophiapi/checkpoints/stupid_no-oh-prompt_qwen3_router_model-5_instance-100_max-length-16384_samples-20000/checkpoint-4000"
 # Give examples from the validation set
-path_to_validation_set = "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned_no-oh-prompt_partial-trajectories_2025-08-28T00-49-09/1000-samples/20250828_005920_val_chat-template-v2_max-len-16384.jsonl"
+path_to_validation_set = "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_cleaned_no-oh-prompt_partial-trajectories_2025-08-28T00-49-09/20000-samples/20250828_095623_val_chat-template-v2_max-len-16384.jsonl"
 
 
 def find_model_from_prompt(prompt):
@@ -60,7 +60,7 @@ output_f.write(f"=" * 80 + "\n\n")
 
 with open(path_to_validation_set, "r") as f:
     # Read all lines and randomly select num_examples
-    num_examples = 200
+    num_examples = 1
     stats = {}
     all_lines = f.readlines()
     selected_lines = random.sample(all_lines, min(num_examples, len(all_lines)))
@@ -109,27 +109,47 @@ with open(path_to_validation_set, "r") as f:
         output_f.write(f"\nTrue completion: '{example['completion']}'\n")
         output_f.write(f"\nModel's response: {model_yes_or_no}\n") # Print the model's yes or no verdict
         
+        # print(f"\nexample['prompt']: {example['prompt']}\n")
         inputs = tokenizer.apply_chat_template(example['prompt'], tokenize=True, return_tensors="pt", add_generation_prompt=True).to("cuda")
+        print(f"inputs: {inputs}")
+        print(f"inputs shape: {inputs.shape}")
         
         with torch.no_grad():
-            outputs = model.generate(inputs, max_new_tokens=1, do_sample=False, output_logits=True, return_dict_in_generate=True) # KEEP THIS
-            # # UNCOMMENT TO CHECK OUTPUT DECODING
+            outputs = model.generate(inputs, 
+                                     max_new_tokens=10, 
+                                     do_sample=False, 
+                                     output_logits=True, 
+                                     return_dict_in_generate=True,
+                                     ) # KEEP THIS
+            # UNCOMMENT TO CHECK OUTPUT DECODING
             # outputs = model.generate(inputs, max_new_tokens=5, do_sample=False) 
         
         # # UNCOMMENT TO CHECK OUTPUT DECODING
         # print(f"\noutputs: {outputs}")
         # print(f"\noutputs shape: {outputs.shape}")
-        # decoded_outputs = tokenizer.decode(outputs[0], skip_special_tokens=False)
+        # decoded_outputs = tokenizer.decode(outputs, skip_special_tokens=False)
         # print(f"Decoded outputs: {decoded_outputs}\n\n")
         
-        # print(f"\noutputs: {outputs}\n")
-        # print(f"\noutputs logits: {outputs.logits}\n")
-        # print(f"\noutputs logits length: {len(outputs.logits)}\n")
-        # print(f"\nshape of outputs.logits[0]: {outputs.logits[0].shape}\n")
+        print(f"\noutputs: {outputs}\n")
+        print(f"\noutputs logits: {outputs.logits}\n")
+        print(f"\noutputs logits length: {len(outputs.logits)}\n")
+        print(f"\nshape of outputs.logits[0]: {outputs.logits[0].shape}\n")
         # output_f.write(f"\noutputs: {outputs}\n")
         # output_f.write(f"\noutputs.logits: {outputs.logits}\n")
         # output_f.write(f"\noutputs logits length: {len(outputs.logits)}\n")
         # output_f.write(f"\nshape of outputs.logits[0]: {outputs.logits[0].shape}\n")
+        
+        # SHENANIGANS
+        # decoded_outputs = tokenizer.batch_decode(outputs.sequences, skip_special_tokens=False)
+        # print(f"Decoded outputs: {decoded_outputs}\n\n")
+        # print(f"Decoded outputs length: {len(decoded_outputs)}\n\n")
+        # Use GREEDY DECODING to get the sequence of generated tokens
+        generated_tokens = [torch.argmax(logits, dim=-1).item() for logits in outputs.logits]
+        print(f"Generated tokens: {generated_tokens}\n\n")
+        # Decode the generated tokens
+        model_response = tokenizer.decode(generated_tokens, skip_special_tokens=True)
+        print(f"Model response: {model_response}\n\n")
+        
         
         yes_logit = outputs.logits[0][0][yes_token_id].cpu().numpy()
         no_logit = outputs.logits[0][0][no_token_id].cpu().numpy()

@@ -45,7 +45,7 @@ export START_ROUTER=true
 # Analyze router decisions (default: true)
 export ANALYZE_DECISIONS=false
 
-# Enable random mode instead of router model (default: false)
+# [AT ROUTER LAUNCH TIME, i.e. ON COMPUTE NODE] Enable random mode instead of router model (default: false)
 export RANDOM_MODE=true
 # Note that if running on cluster, RANDOM_MODE needs to be set before launching the router - if it is set after launching the router but before the batch script, then that setting will be ignored
 
@@ -67,14 +67,16 @@ srun --pty bash -l
 cd ~/model-routing
 export LITELLM_API_KEY="sk-..."
 # Export other environment variables...
-# Set the base model path (defaults to "/data/user_data/sophiapi/checkpoints/stupid_withtokens_qwen3_router_model-5_instance-100_pruned-4_with-ids_by-example")
+# Set the base model path (defaults to "/data/user_data/sophiapi/checkpoints/stupid_consistent_qwen3_router_model-5_instance-100_max-length-16384_samples-20000")
 export BASE_MODEL_PATH="/path/to/model/directory"
-# Set the checkpoint (defaults to checkpoint-796)
+# Set the checkpoint (defaults to checkpoint-4500)
 export ROUTER_CHECKPOINT=checkpoint-5000
-# Set the max tokens (defaults to 4096)
+# Set the max tokens (defaults to 4096) (SIDENOTE: I don't actually think this does anything? the router should be max token agnostic pretty much)
 export MAX_TOKENS=8192
 # Set the router port (defaults to 8123)
 export ROUTER_PORT=8000
+# Set random mode (defaults to False)
+export RANDOM_MODE=True
 python3 swe_bench_router_stupid.py
 # To automatically save everything that shows up in the terminal to a text file:
 python3 swe_bench_router_stupid.py 2>&1 | tee "router_stupid_debug_$(date +%Y%m%d_%H%M%S).log"
@@ -85,13 +87,13 @@ python3 swe_bench_router_stupid.py 2>&1 | tee "router_stupid_debug_$(date +%Y%m%
 ```bash
 # 1. Test health endpoint
 curl http://YOUR_HOSTNAME:8123/health
-# Example: curl http://babel-4-33:8123/health
+# Example: curl http://babel-3-13:8123/health
 
 # 2. Test chat endpoint
 curl -X POST http://YOUR_HOSTNAME:8123/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"messages":[{"role":"user","content":"Hello"}]}'
-# Example: curl -X POST http://babel-2-25:8123/v1/chat/completions -H "Content-Type: application/json" -d '{"messages":[{"role":"user","content":"Hello"}]}'
+# Example: curl -X POST http://babel-3-13:8123/v1/chat/completions -H "Content-Type: application/json" -d '{"messages":[{"role":"user","content":"Hello"}]}'
 ```
 
 ### 3. Update OpenHands config
@@ -99,7 +101,7 @@ curl -X POST http://YOUR_HOSTNAME:8123/v1/chat/completions \
 # Update the OpenHands config with the actual hostname
 cd ~/model-routing/OpenHands
 sed -i "/\[llm\.router\]/,/^\[/ s/base_url = \"http:\/\/[^:]*:8123\/v1\"/base_url = \"http:\/\/YOUR_HOSTNAME:8123\/v1\"/" config.toml
-# Example: sed -i "/\[llm\.router\]/,/^\[/ s/base_url = \"http:\/\/[^:]*:8123\/v1\"/base_url = \"http:\/\/babel-2-25:8123\/v1\"/" config.toml
+# Example: sed -i "/\[llm\.router\]/,/^\[/ s/base_url = \"http:\/\/[^:]*:8123\/v1\"/base_url = \"http:\/\/babel-3-13:8123\/v1\"/" config.toml
 ```
 
 ### 4. Run evaluation with correct router URL
@@ -108,8 +110,11 @@ sed -i "/\[llm\.router\]/,/^\[/ s/base_url = \"http:\/\/[^:]*:8123\/v1\"/base_ur
 
 # Set the router URL to match your router server
 export ROUTER_URL="http://YOUR_HOSTNAME:8123"
+# eg. export ROUTER_URL="http://babel-3-13:8123"
 
 # Configure parameters (see "Configuration" above)
+
+# DON'T FORGET TO CLEAR OUT THE SWEBENCH CONFIG.TOML OR ELSE IT WILL FILTER OUT EVERYTHING
 
 # Submit batch job
 sbatch batch-scripts/generate_router_rollouts.sbatch
@@ -127,12 +132,12 @@ python3 evaluation/benchmarks/swe_bench/scripts/evaluate_router.py --num-workers
 
 # Run with custom settings
 python3 evaluation/benchmarks/swe_bench/scripts/evaluate_router.py \
-  --eval-limit 50 \
-  --max-iter 50 \
-  --num-workers 4 \
-  --router-url "http://babel-2-25:8123" \
-  --start-router \
-  --analyze-decisions
+  --eval-limit 1 \
+  --max-iter 10 \
+  --num-workers 1 \
+  --router-url "http://babel-3-17:8123" \
+  --start-router false \
+  --analyze-decisions false
 
 # Run with round-robin mode (ignores router model)
 python3 evaluation/benchmarks/swe_bench/scripts/evaluate_router.py \

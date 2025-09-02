@@ -1,6 +1,6 @@
 #!/bin/bash
 # ───── Slurm resource requests ─────────────────────────────────────────
-#SBATCH --job-name=haiku-rollouts-5           # appears in squeue
+#SBATCH --job-name=qwen3-coder-rollouts           # appears in squeue
 #SBATCH --partition=general             # up to 2 days; preempt for longer
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:0               # no gpus needed for remote runtime
@@ -44,7 +44,7 @@ ls -la evaluation/benchmarks/swe_bench/configs/models_config.yaml
 echo "=== Starting batch evaluation ==="
 python3 -u evaluation/benchmarks/swe_bench/scripts/batch_evaluate_models.py \
   --config evaluation/benchmarks/swe_bench/configs/models_config.yaml \
-  --num-workers 2
+  --num-workers 1
 
 echo "=== Job completed at $(date) ==="
 
