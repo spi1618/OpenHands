@@ -13,13 +13,14 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from openai import OpenAI, BadRequestError
 from transformers import AutoTokenizer
+from litellm import token_counter, completion
 
 # Import the router inference
 from router_inference_stupid import RouterInference
 
 # Configure available models + client
 # DO NOT SIMPLIFY THE NAMES HERE, THEY MUST MATCH THE CONFIG SO WE CAN USE THE LITELLM PROXY SERVER; THEY SHOULD MATCH THE CONFIG FILE
-MODEL_MAPPING = json.load(open("/home/sophiapi/model-routing/model_name_mapping.json", "r"))
+MODEL_MAPPING = json.load(open("/home/sophiapi/model-routing/static_things/model_name_mapping.json", "r"))
 AVAILABLE_MODELS = list(MODEL_MAPPING.values())
 
 # One global OpenAI client configured for the proxy
@@ -27,6 +28,12 @@ _client = OpenAI(
     api_key=os.getenv("LITELLM_API_KEY"),
     base_url="https://cmu.litellm.ai",
 )
+
+# # move
+# response = litellm.completion(
+#     model="litellm/neulab/claude-3-5-haiku-20241022",
+#     messages=[{"role": "user", "content": "Hello, how are you?"}],
+# )
 
 if _client.api_key is None:
     raise RuntimeError("Set LITELLM_API_KEY environment variable before running.")
@@ -194,8 +201,49 @@ def convert_messages_to_partial_trajectory(messages: List[ChatMessage]) -> List[
     
     return partial_trajectory
     
+def count_cache_read_tokens(messages: List[ChatMessage]) -> int:
+    # cache_read: everything up to an includeing the last assistant message
+    # cache_write: everything after the last assistant message
+    # use the litellm token counter
+    cache_read = []
+    cache_write = []
+    count_read = token_counter(model="litellm_proxy/neulab/claude-3-5-haiku-20241022", messages=cache_read)
+    count_write = token_counter(model="litellm_proxy/neulab/claude-3-5-haiku-20241022", messages=cache_write)
+    return count_read, count_write
+    # see if this matches what we get from the model directly
 
-@app.post("/v1/chat/completions", response_model=ChatResponse)
+# def add_cache_control_to_messages(messages: List[ChatMessage], model_name: str): -> List[ChatMessage]:
+#     # if claude is in the model name, add cache control to the first system message
+#     if "claude" in model_name:
+#         messages[0]["content"][-1]["cache_control"] = {"type": "ephemeral"}
+#         # reverse iterate through the messages until you find a user message
+#         for i in range(len(messages)-1, -1, -1):
+#             if messages[i].role == "user":
+#                 messages[i]["content"][-1]["cache_control"] = {"type": "ephemeral"}
+#                 break
+#     return messages
+
+def apply_prompt_caching(messages: List[ChatMessage], model_name: str) -> List[ChatMessage]:
+    """Applies caching breakpoints to the messages.
+
+    For new Anthropic API, we only need to mark the last user or tool message as cacheable.
+    """
+    if "claude" in model_name:
+        # make the content map to a list of dicts instead of a string
+        for message in messages:
+            # only do this if the content is a string
+            if isinstance(message["content"], str):
+                message["content"] = [{"type": "text", "text": message["content"]}]
+        if len(messages) > 0 and messages[0]["role"] == 'system':
+            messages[0]["content"][-1]["cache_control"] = {"type": "ephemeral"}
+        # NOTE: this is only needed for anthropic
+        for message in reversed(messages):
+            if message["role"] in ('user', 'tool'):
+                message["content"][-1]["cache_control"] = {"type": "ephemeral"}
+                break
+    return messages
+
+@app.post("/v1/chat/completions")
 async def route_chat(req: ChatRequest):
     """Proxy the chat completion to the routed model."""
     # Extract trajectory from messages for routing
@@ -206,6 +254,9 @@ async def route_chat(req: ChatRequest):
     
     # # Debug: Print the request's messages
     # print(f"[DEBUG] Request messages: {debug_json_content(req.messages)}")
+    
+    for msg in req.messages:
+        print(f"[DEBUG] Message: {msg.model_dump()}")
     
     trajectory_dicts = convert_messages_to_partial_trajectory(req.messages)
     # Double check that the trajectory is not empty
@@ -222,6 +273,7 @@ async def route_chat(req: ChatRequest):
         print(f"[DEBUG] Random mode enabled, selecting a random model")
         import random
         selected_model = random.choice(AVAILABLE_MODELS)
+        selected_model = "litellm_proxy/neulab/claude-3-5-haiku-20241022" # REMOVE THIS AFTER DEBUGGING TODO
         print(f"[DEBUG] Random selected: {selected_model}")
     elif trajectory_dicts:
         print(f"[DEBUG] Using router inference with {len(trajectory_dicts)} trajectory events")
@@ -247,59 +299,69 @@ async def route_chat(req: ChatRequest):
     
     try:
         print(f"[DEBUG] Calling LiteLLM proxy with model: {selected_model}")
-        response = _client.chat.completions.create(
+        response = completion(
+            base_url="https://cmu.litellm.ai",
+            api_key=os.getenv("LITELLM_API_KEY"),
             model=selected_model,
             # Note to my future self, because I know you will get confused: KEEP THIS AS IS - it is going to the actual LLM, not the router model
-            messages=[m.model_dump() for m in req.messages], 
+            messages=apply_prompt_caching([msg.model_dump() for msg in req.messages], selected_model), 
             max_tokens=req.max_tokens,
         )
     except BadRequestError as e:
         raise HTTPException(status_code=502, detail=str(e))
+    
+    # modul dump the response
+    print(f"[DEBUG] Response: HELLO\n ")
+    response_data = response.model_dump()
+    print(f"[DEBUG] Response: {response_data}")
+    response_data["model"] = selected_model
+    
+    return response_data
 
-    print(f"[DEBUG] Response type: {type(response)}")
-    # print(f"[DEBUG] Response attributes: {dir(response)}")
-    print(f"[DEBUG] Response choices: {response.choices}")
-    print(f"[DEBUG] Response usage: {response.usage}")
+    # print(f"[DEBUG] Response type: {type(response)}")
+    # # print(f"[DEBUG] Response attributes: {dir(response)}")
+    # print(f"[DEBUG] Response choices: {response.choices}")
+    # print(f"[DEBUG] Response usage: {response.usage}")
     
-    choice = response.choices[0]
-    usage = response.usage
+    # choice = response.choices[0]
+    # usage = response.usage
 
-    # Ensure we have the correct response format
-    content = choice.message.content or ""
-    if not content and hasattr(response, 'content'):
-        content = response.content or ""
+    # # Ensure we have the correct response format
+    # content = choice.message.content or ""
+    # if not content and hasattr(response, 'content'):
+    #     content = response.content or ""
     
-    print(f"[DEBUG] Final content: {content[:100]}...")
+    # print(f"[DEBUG] Final content: {content[:100]}...")
     
-    # Return the response in the format that LiteLLM expects
-    from fastapi.responses import JSONResponse
+    # # Return the response in the format that LiteLLM expects
+    # from fastapi.responses import JSONResponse
     
-    # TODO: check this
-    response_data = {
-        "id": response.id,
-        "object": "chat.completion",
-        "created": response.created,
-        "model": selected_model,
-        "choices": [
-            {
-                "index": 0,
-                "message": {
-                    "role": "assistant",
-                    "content": content
-                },
-                "finish_reason": "stop" # TODO: check this (what does finish_reason mean?)
-            }
-        ],
-        "usage": {
-            "prompt_tokens": usage.prompt_tokens if usage else 0,
-            "completion_tokens": usage.completion_tokens if usage else 0,
-            "total_tokens": usage.total_tokens if usage else 0
-        }
-    }
+    # # TODO: check this
+    # response_data = {
+    #     "id": response.id,
+    #     "object": "chat.completion",
+    #     "created": response.created,
+    #     "model": selected_model,
+    #     "choices": [
+    #         {
+    #             "index": 0,
+    #             "message": {
+    #                 "role": "assistant",
+    #                 "content": content
+    #             },
+    #             "finish_reason": "stop" # TODO: check this (what does finish_reason mean?)
+    #         }
+    #     ],
+    #     "usage": {
+    #         "prompt_tokens": usage.prompt_tokens if usage else 0,
+    #         "completion_tokens": usage.completion_tokens if usage else 0,
+    #         "total_tokens": usage.total_tokens if usage else 0
+    #     }
+    # }
     
-    print(f"[DEBUG] Sending response: model={selected_model}, content_length={len(content)}, total_tokens={usage.total_tokens if usage else 0}")
+    # print(f"[DEBUG] Sending response: model={selected_model}, content_length={len(content)}, total_tokens={usage.total_tokens if usage else 0}")
     
-    return JSONResponse(content=response_data)
+    # return JSONResponse(content=response_data)
 
 @app.get("/health")
 async def health():
