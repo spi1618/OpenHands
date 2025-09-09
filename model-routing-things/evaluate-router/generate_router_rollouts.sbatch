@@ -1,11 +1,11 @@
 #!/bin/bash
 # ───── Slurm resource requests ─────────────────────────────────────────
-#SBATCH --job-name=router-rollout-stupid           # appears in squeue
+#SBATCH --job-name=router-rollout-stupid-deepseek-only           # appears in squeue
 #SBATCH --partition=general             # up to 2 days; preempt for longer
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:0               
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=128G
+#SBATCH --mem=64G
 #SBATCH --time=0-48:00                  # D-HH:MM   (48 h here)
 #SBATCH --output=batch-logs/%x-%j.out # stdout  (%x=job-name  %j=job-ID)
 #SBATCH --error=batch-logs/%x-%j.err  # stderr   (can be same as output)

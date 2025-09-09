@@ -185,6 +185,7 @@ class ConversationMemory:
         pending_tool_call_action_messages: dict[str, Message],
         vision_is_active: bool = False,
     ) -> list[Message]:
+        print(f"[DEBUG] !!!!! ++++++ _process_action detected ++++++ !!!!!")
         """Converts an action into a message format that can be sent to the LLM.
 
         This method handles different types of actions and formats them appropriately:
@@ -231,6 +232,7 @@ class ConversationMemory:
                 MCPAction,
             ),
         ) or (isinstance(action, CmdRunAction) and action.source == 'agent'):
+            print(f"[DEBUG] ++++++ CmdRunAction from agent detected ++++++")
             tool_metadata = action.tool_call_metadata
             assert tool_metadata is not None, (
                 'Tool call metadata should NOT be None when function calling is enabled. Action: '
@@ -252,9 +254,11 @@ class ConversationMemory:
                 if assistant_msg.content and assistant_msg.content.strip()
                 else [],
                 tool_calls=assistant_msg.tool_calls,
+                metadata={'model_name': llm_response.model},
             )
             return []
         elif isinstance(action, AgentFinishAction):
+            print(f"[DEBUG] ++++++ AgentFinishAction detected ++++++")
             role = 'user' if action.source == 'user' else 'assistant'
 
             # when agent finishes, it has tool_metadata
@@ -283,9 +287,19 @@ class ConversationMemory:
                 Message(
                     role=role,  # type: ignore[arg-type]
                     content=[TextContent(text=action.thought)],
+                    metadata={'model_name': tool_metadata.model_response.model if tool_metadata is not None else None},
                 )
             ]
         elif isinstance(action, MessageAction):
+            print(f"[DEBUG] ++++++ MessageAction detected ++++++")
+            print(f"[DEBUG] Action attributes: {dir(action)}")
+            # DEBUG:
+            if action.tool_call_metadata is not None:
+                print(f"[DEBUG **] Tool call metadata attributes: {dir(action.tool_call_metadata)}")
+                if action.tool_call_metadata.model_response is not None:
+                    print(f"[DEBUG **] Model response attributes: {dir(action.tool_call_metadata.model_response)}")
+                    if action.tool_call_metadata.model_response.model is not None:
+                        print(f"[DEBUG **] Model name: {action.tool_call_metadata.model_response.model}")
             role = 'user' if action.source == 'user' else 'assistant'
             content = [TextContent(text=action.content or '')]
             if vision_is_active and action.image_urls:
@@ -301,9 +315,11 @@ class ConversationMemory:
                 Message(
                     role=role,  # type: ignore[arg-type]
                     content=content,
+                    metadata={'model_name': action.tool_call_metadata.model_response.model if action.tool_call_metadata is not None else None},
                 )
             ]
         elif isinstance(action, CmdRunAction) and action.source == 'user':
+            print(f"[DEBUG] ++++++ CmdRunAction from user detected ++++++")
             content = [
                 TextContent(text=f'User executed the command:\n{action.command}')
             ]
@@ -311,9 +327,11 @@ class ConversationMemory:
                 Message(
                     role='user',  # Always user for CmdRunAction
                     content=content,
+                    metadata={'model_name': action.tool_call_metadata.model_response.model}, # NOTE: not really sure if this will work since it seems like this is when the source is the user? hopefully this never gets used?
                 )
             ]
         elif isinstance(action, SystemMessageAction):
+            print(f"[DEBUG] ++++++ SystemMessageAction detected ++++++")
             # Convert SystemMessageAction to a system message
             return [
                 Message(
@@ -321,6 +339,7 @@ class ConversationMemory:
                     content=[TextContent(text=action.content)],
                     # Include tools if function calling is enabled
                     tool_calls=None,
+                    # metadata={'model_name': action.tool_call_metadata.model_response.model}, # NOTE: uncommented because the rollout complained
                 )
             ]
         return []

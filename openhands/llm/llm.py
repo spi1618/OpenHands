@@ -5,6 +5,8 @@ import warnings
 from functools import partial
 from typing import Any, Callable
 
+import datetime
+
 import httpx
 
 from openhands.core.config import LLMConfig
@@ -220,7 +222,7 @@ class LLM(RetryMixin, DebugMixin):
             api_version=self.config.api_version,
             custom_llm_provider=self.config.custom_llm_provider,
             timeout=self.config.timeout,
-            drop_params=self.config.drop_params,
+            drop_params=self.config.drop_params, # nuclear option: set to false?
             seed=self.config.seed,
             **kwargs,
         )
@@ -307,6 +309,9 @@ class LLM(RetryMixin, DebugMixin):
             # set litellm modify_params to the configured value
             # True by default to allow litellm to do transformations like adding a default message, when a message is empty
             # NOTE: this setting is global; unlike drop_params, it cannot be overridden in the litellm completion partial
+            litellm.modify_params = self.config.modify_params
+            
+            # NOTE: set to false for stupid router
             litellm.modify_params = self.config.modify_params
 
             # if we're not using litellm proxy, remove the extra_body
@@ -587,6 +592,8 @@ class LLM(RetryMixin, DebugMixin):
 
         Logs the cost and usage stats of the completion call.
         """
+        print(f"[***DEBUG {datetime.datetime.now().isoformat()}***] Response received by _post_completion:\n {response.model_dump()}")
+        print(f"[***DEBUG {datetime.datetime.now().isoformat()}***] END OF RESPONSE")
         try:
             cur_cost = self._completion_cost(response)
         except Exception:
@@ -816,4 +823,7 @@ class LLM(RetryMixin, DebugMixin):
                 message.force_string_serializer = True
 
         # let pydantic handle the serialization
+        old_return = [message.model_dump() for message in messages]
+        # assert the messages in the old_return have the metadata field
+        assert all('metadata' in message for message in old_return), 'Expected metadata field in messages'
         return [message.model_dump() for message in messages]

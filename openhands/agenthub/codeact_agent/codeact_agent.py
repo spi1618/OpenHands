@@ -2,6 +2,8 @@ import os
 import sys
 from collections import deque
 from typing import TYPE_CHECKING
+import datetime
+
 
 if TYPE_CHECKING:
     from litellm import ChatCompletionToolParam
@@ -189,13 +191,27 @@ class CodeActAgent(Agent):
 
         initial_user_message = self._get_initial_user_message(state.history)
         messages = self._get_messages(condensed_history, initial_user_message)
+        # DEBUG: check that the messages have metadata
+        print(f"---------- god help us all ----------")
+        for msg in messages:
+            print(f"[DEBUG {datetime.datetime.now().isoformat()}] Message attributes: {dir(msg)}")
+            print(f"[DEBUG {datetime.datetime.now().isoformat()}] Message metadata: {msg.metadata}")
+            print(f"[DEBUG {datetime.datetime.now().isoformat()}] Message: {msg.model_dump()}")
+        print(f"---------- god helped us all ----------")
+        # check whether format_messages_for_llm returns a list of dicts that 
+        temp = self.llm.format_messages_for_llm(messages)
+        for stupid_message in temp:
+            print(f"[DEBUG {datetime.datetime.now().isoformat()}] Stupid message from format messages: {stupid_message['metadata']}")
+        # print(f"[DEBUG {datetime.datetime.now().isoformat()}] output of format_messages_for_llm: {self.llm.format_messages_for_llm(messages)}")
+        print(f" ---------- end of format_messages_for_llm output ----------")
         params: dict = {
             'messages': self.llm.format_messages_for_llm(messages),
         }
         params['tools'] = check_tools(self.tools, self.llm.config)
         params['extra_body'] = {'metadata': state.to_llm_metadata(agent_name=self.name)}
-        response = self.llm.completion(**params)
+        response = self.llm.completion(**params) # <-- response sent to post completion
         logger.debug(f'Response from LLM: {response}')
+        print(f"[DEBUG {datetime.datetime.now().isoformat()}] Response from LLM: {response.model_dump()}")
         actions = self.response_to_actions(response)
         logger.debug(f'Actions after response_to_actions: {actions}')
         for action in actions:

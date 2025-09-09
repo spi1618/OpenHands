@@ -45,7 +45,7 @@ class RouterInference:
         self.model = AutoModelForCausalLM.from_pretrained(
             MODEL_PATH,
             trust_remote_code=True
-        )
+        ).to("cuda")
         
         # Set to evaluation mode
         self.model.eval()
@@ -61,8 +61,8 @@ class RouterInference:
             self.bucket_token_ids[token_id] = bucket_number
         
         print(f"Router loaded on device: {next(self.model.parameters()).device}")
-        print(f"[YES] token ID: {self.yes_token_id}")
-        print(f"[NO] token ID: {self.no_token_id}")
+        print(f"YES token ID: {self.yes_token_id}")
+        print(f"NO token ID: {self.no_token_id}")
     
        
     # ============== SOME HELPER FUNCTIONS ==============
@@ -101,6 +101,8 @@ class RouterInference:
         Validate and parse model output of the form:
           {"success":"YES","output_tokens_bucket":"Bucket 4"}
         """
+        print(f"[DEBUG] In validate_model_response...")
+        print(f"[DEBUG] Model response: {model_response}")
         pattern = re.compile(r'^\{"success":"(YES|NO)","output_tokens_bucket":"Bucket ([1-8])"\}$')
         stripped_response = model_response.strip()
         match = pattern.match(stripped_response)
@@ -108,16 +110,19 @@ class RouterInference:
             raise ValueError("Invalid model response: {model_response}")
         verdict = match.group(1)
         bucket = match.group(2)
+        print(f"[DEBUG] Verdict: {verdict}")
+        print(f"[DEBUG] Bucket: {bucket}")
         return verdict, bucket
     
     def parse_generated_tokens(self, generated_tokens: List[int]) -> Tuple[str, int, int]:
         """
         Parse the generated tokens and return the verdict, the index of the YES/NO verdict, and the bucket number.
         """
-        
+        print(f"[DEBUG] In parse_generated_tokens...")
+        print(f"[DEBUG] Generated tokens: {generated_tokens}")
         # Find the index of the YES/NO verdict
-        yes_index = generated_tokens.index(self.yes_token_id)
-        no_index = generated_tokens.index(self.no_token_id)
+        yes_index = generated_tokens.index(self.yes_token_id) if self.yes_token_id in generated_tokens else -1
+        no_index = generated_tokens.index(self.no_token_id) if self.no_token_id in generated_tokens else -1
         # Check that exactly one of the indices is not -1
         if yes_index == -1 and no_index == -1:
             raise ValueError("Neither YES nor NO was generated")
@@ -147,6 +152,7 @@ class RouterInference:
         """
         Get the logit at the given index.
         """
+        print(f"[DEBUG] In get_logit_at_index...")
         return outputs.logits[index][0][token_id]
     
     # ============== SOME HELPER FUNCTIONS ==============
@@ -159,6 +165,7 @@ class RouterInference:
         Return the predicted bucket number.
         Note this returns the raw logits, NOT the probabilities.
         """
+        print(f"[DEBUG] In get_model_logits_and_bucket...")
         logits_dict = {}
         bucket_number = 0
         
@@ -187,15 +194,20 @@ class RouterInference:
         
         # Validate the model response
         verdict_from_validate, bucket_from_validate = self.validate_model_response(model_response)
+        print(f"[DEBUG] Verdict from validate_model_response: {verdict_from_validate}")
+        print(f"[DEBUG] Bucket from validate_model_response: {bucket_from_validate}")
         
         # Parse the generated tokens
         verdict_from_parse, verdict_index, bucket_from_parse = self.parse_generated_tokens(generated_tokens)
+        print(f"[DEBUG] Verdict from parse_generated_tokens: {verdict_from_parse}")
+        print(f"[DEBUG] Verdict index from parse_generated_tokens: {verdict_index}")
+        print(f"[DEBUG] Bucket from parse_generated_tokens: {bucket_from_parse}")
         
-        # Check that the verdict and bucket number from the validate_model_response and parse_model_response functions match
+        # Check that the verdict and bucket number from the validate_model_response and parse_generated_tokens functions match
         if verdict_from_validate != verdict_from_parse:
-            raise ValueError("Verdict from validate_model_response and parse_model_response do not match")
+            raise ValueError("Verdict from validate_model_response and parse_generated_tokens do not match")
         if bucket_from_validate != bucket_from_parse:
-            raise ValueError("Bucket from validate_model_response and parse_model_response do not match")
+            raise ValueError("Bucket from validate_model_response and parse_generated_tokens do not match")
         
         # Get the logits for the successful verdict and the unsuccessful verdict
         yes_logit = self.get_logit_at_index(outputs, verdict_index, self.yes_token_id)
@@ -216,7 +228,7 @@ class RouterInference:
         """
         Estimate the reward for the given logits and estimated token bucket.
         """
-        # TODO: implement this
+        print(f"[DEBUG] In estimate_results...")
         # Return the reward, the estimated probability of success, and the estimated cost
         
         # Compute yes probability = exp(logit[YES]) / (exp(logit[YES]) + exp(logit[NO]))
@@ -230,12 +242,17 @@ class RouterInference:
         
         # Compute the estimated cost
         cached_input_token_cost = cached_input_tokens * TOKEN_COSTS[model_name]["cached_input_cost"]
+        print(f"[DEBUG] Estimated cached input token cost: {cached_input_token_cost}")
         uncached_input_token_cost = uncached_input_tokens * TOKEN_COSTS[model_name]["uncached_input_cost"]
+        print(f"[DEBUG] Estimated uncached input token cost: {uncached_input_token_cost}")
         output_token_cost = BUCKETS[str(est_token_bucket)]["representative"] * TOKEN_COSTS[model_name]["output_cost"]
+        print(f"[DEBUG] Estimated output token cost: {output_token_cost}")
         est_cost = cached_input_token_cost + uncached_input_token_cost + output_token_cost
+        print(f"[DEBUG] Estimated total cost: {est_cost}")
         
         # Compute the estimated reward
         est_reward = yes_prob - LAMBDA * est_cost
+        print(f"[DEBUG] Estimated reward: {est_reward}")
         
         return est_reward, yes_prob, est_cost
     
@@ -244,6 +261,7 @@ class RouterInference:
         """
         Literally just cuts down on the trajectory in case the trajectory is too long.
         """
+        print(f"[DEBUG] In build_partial_trajectory_with_truncation...")
         was_truncated = False
         
         if self.tokenizer:
@@ -268,6 +286,7 @@ class RouterInference:
         return truncated_trajectory, was_truncated    
     
     def build_truncated_prompt(self, partial_trajectory: List[Dict], candidate_model: str) -> List[Dict]:
+        print(f"[DEBUG] In build_truncated_prompt...")
         # Require that the trajectory is a list
         if not isinstance(partial_trajectory, list):
             raise ValueError("Trajectory must be a list")
@@ -278,6 +297,7 @@ class RouterInference:
         model_part = f"### Candidate model\n[M] {candidate_model}\n\n"
         question_part = "### Will this agent eventually succeed if the rest of the task is attempted with the candidate model? Into which of the 8 output token buckets will the candidate model's immediate next step fall?"
         
+        # Tit's fine to leave this as is, we're using the tokenizer specific to the router model, not the candidate model
         # Compute the number of tokens in the essential parts
         system_tokens = len(self.tokenizer.encode(system_part))
         trajectory_header_tokens = len(self.tokenizer.encode(trajectory_header))
@@ -311,6 +331,7 @@ class RouterInference:
         return truncated_prompt_list
         
     def select_best_model(self, partial_trajectory: List[Dict], cached_input_tokens: int, uncached_input_tokens: int) -> Tuple[str, float, float, float]:
+        print(f"[DEBUG] In select_best_model...")
         # Assume that the trajectory is not truncated
         
         # Check that the trajectory is a list
@@ -352,6 +373,11 @@ class RouterInference:
         best_reward = estimated_results_dict[best_model]["estimated reward"]
         best_model_p_success = estimated_results_dict[best_model]["estimated probability of success"]
         best_model_cost = estimated_results_dict[best_model]["estimated cost"]
+        
+        print(f"[DEBUG] Best model: {best_model}")
+        print(f"[DEBUG] Best reward: {best_reward}")
+        print(f"[DEBUG] Best model probability of success: {best_model_p_success}")
+        print(f"[DEBUG] Best model cost: {best_model_cost}")
         
         # Return the model with the highest reward, its reward, its estimated probability of success, and its estimated cost
         return best_model, best_reward, best_model_p_success, best_model_cost

@@ -56,6 +56,11 @@ CONSISTENT_TRAIN_DATASET_PATH_16384_20000 = "/home/sophiapi/model-routing/OpenHa
 # about 2000 samples
 CONSISTENT_VAL_DATASET_PATH_16384_20000 = "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_consistent_cleaned_no-oh-prompt_partial-trajectories_2025-08-30T19-46-44/20000-samples/20250831_141405_val_chat-template-v2_max-len-16384.jsonl"
 
+# about 18000 samples
+CONSISTENT_WNAME_TRAIN_DATASET_PATH_16384_20000 = ""
+# about 2000 samples
+CONSISTENT_WNAME_VAL_DATASET_PATH_16384_20000 = "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_consistent_cleaned_no-oh-prompt_partial-trajectories_2025-08-30T19-46-44/20000-samples/20250906_150645_val_chat-template-v2_max-len-16384.jsonl"
+
 ######################### NEW STUFF #########################################################
 
 ##### SET THIS BEFORE EVERY RUN AND CHECK THAT THE VALUES ARE CORRECT + MATCH THE TRAINING DATASET #####

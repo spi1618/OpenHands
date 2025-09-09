@@ -1,7 +1,28 @@
 {
-    "claude-3-5-haiku": {"cached_input_cost": 0.000015, "uncached_input_cost": 0.00015, "output_cost": 0.0000015},
-    "claude-sonnet-4": {"cached_input_cost": 0.00006, "uncached_input_cost": 0.0006, "output_cost": 0.000006},
-    "deepseek-v3": {"cached_input_cost": 0.00001, "uncached_input_cost": 0.0001, "output_cost": 0.000001},
-    "devstral-small": {"cached_input_cost": 0.00001, "uncached_input_cost": 0.0001, "output_cost": 0.000001},
-    "kimi-k2": {"cached_input_cost": 0.00001, "uncached_input_cost": 0.0001, "output_cost": 0.000001}
-}
+    "claude-3-5-haiku": {
+      "cached_input_cost": 0.00000008,
+      "uncached_input_cost": 0.0000008,
+      "output_cost": 0.000004
+    },
+    "claude-sonnet-4": {
+      "cached_input_cost": 0.0000003,
+      "uncached_input_cost": 0.000003,
+      "output_cost": 0.000015
+    },
+    "deepseek-v3": {
+      "cached_input_cost": 0.00000007,
+      "uncached_input_cost": 0.00000027,
+      "output_cost": 0.0000011
+    },
+    "devstral-small": {
+      "cached_input_cost": 0.0000001,
+      "uncached_input_cost": 0.0000001,
+      "output_cost": 0.0000003
+    },
+    "kimi-k2": {
+      "cached_input_cost": 0.00000015,
+      "uncached_input_cost": 0.0000006,
+      "output_cost": 0.0000025
+    }
+  }
+  

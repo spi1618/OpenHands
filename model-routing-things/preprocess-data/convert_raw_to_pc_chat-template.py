@@ -19,7 +19,7 @@ from trl import SFTTrainer, SFTConfig, apply_chat_template
 # Example usage:
 
 # python3 convert_raw_to_pc_chat-template.py \
-# --original-file /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_consistent_cleaned_no-oh-prompt_partial-trajectories_2025-08-30T19-46-44/20000-samples/train.jsonl \
+# --original-file /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_consistent_cleaned_no-oh-prompt_partial-trajectories_2025-08-30T19-46-44/20000-samples/val.jsonl \
 # --pc-output-dir /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_consistent_cleaned_no-oh-prompt_partial-trajectories_2025-08-30T19-46-44/20000-samples/ \
 # --hf-output-dir /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_consistent_cleaned_no-oh-prompt_partial-trajectories_2025-08-30T19-46-44/20000-samples/ \
 # --base-model Qwen/Qwen2.5-0.5B-Instruct \
@@ -79,8 +79,8 @@ def scalp_token_counts_from_partial_trajectory(partial_trajectory: List[Dict]) -
         event = {}
         event["source"] = partial_trajectory[i]["source"]
         event["message"] = partial_trajectory[i]["message"]
-        if "model" in event.keys():
-            event["model"] = partial_trajectory[i]["model"]
+        if "model_name" in partial_trajectory[i].keys():
+            event["model_name"] = partial_trajectory[i]["model_name"]
         partial_trajectory_scalped.append(event)
     return partial_trajectory_scalped, next_token_count
 

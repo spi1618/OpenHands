@@ -780,6 +780,8 @@ if __name__ == '__main__':
     # Convert to pandas with error handling
     try:
         swe_bench_tests = filter_dataset(dataset.to_pandas(), 'instance_id')
+        print(f"[INFO from run_infer.py]: selected {len(swe_bench_tests)} tasks")
+        print(f"[INFO from run_infer.py]: swe_bench_tests: {swe_bench_tests}")
     except Exception as e:
         logger.error(f"Failed to convert dataset to pandas: {e}")
         # Fallback: try with smaller chunks

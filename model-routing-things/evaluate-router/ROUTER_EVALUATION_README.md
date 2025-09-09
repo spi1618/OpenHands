@@ -87,13 +87,13 @@ python3 swe_bench_router_stupid.py 2>&1 | tee "router_stupid_debug_$(date +%Y%m%
 ```bash
 # 1. Test health endpoint
 curl http://YOUR_HOSTNAME:8123/health
-# Example: curl http://babel-3-13:8123/health
+# Example: curl http://babel-4-13:8123/health
 
 # 2. Test chat endpoint
 curl -X POST http://YOUR_HOSTNAME:8123/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"messages":[{"role":"user","content":"Hello"}]}'
-# Example: curl -X POST http://babel-3-13:8123/v1/chat/completions -H "Content-Type: application/json" -d '{"messages":[{"role":"user","content":"Hello"}]}'
+# Example: curl -X POST http://babel-4-13:8123/v1/chat/completions -H "Content-Type: application/json" -d '{"messages":[{"role":"user","content":"Hello"}]}'
 ```
 
 ### 3. Update OpenHands config
@@ -101,7 +101,7 @@ curl -X POST http://YOUR_HOSTNAME:8123/v1/chat/completions \
 # Update the OpenHands config with the actual hostname
 cd ~/model-routing/OpenHands
 sed -i "/\[llm\.router\]/,/^\[/ s/base_url = \"http:\/\/[^:]*:8123\/v1\"/base_url = \"http:\/\/YOUR_HOSTNAME:8123\/v1\"/" config.toml
-# Example: sed -i "/\[llm\.router\]/,/^\[/ s/base_url = \"http:\/\/[^:]*:8123\/v1\"/base_url = \"http:\/\/babel-3-13:8123\/v1\"/" config.toml
+# Example: sed -i "/\[llm\.router\]/,/^\[/ s/base_url = \"http:\/\/[^:]*:8123\/v1\"/base_url = \"http:\/\/babel-6-5:8123\/v1\"/" config.toml
 ```
 
 ### 4. Run evaluation with correct router URL
@@ -110,7 +110,7 @@ sed -i "/\[llm\.router\]/,/^\[/ s/base_url = \"http:\/\/[^:]*:8123\/v1\"/base_ur
 
 # Set the router URL to match your router server
 export ROUTER_URL="http://YOUR_HOSTNAME:8123"
-# eg. export ROUTER_URL="http://babel-3-13:8123"
+# eg. export ROUTER_URL="http://babel-4-29:8123"
 
 # Configure parameters (see "Configuration" above)
 
