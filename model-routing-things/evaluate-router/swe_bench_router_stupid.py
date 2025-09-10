@@ -72,7 +72,7 @@ class ChatRequest(BaseModel):
     messages: List[ChatMessage]
     model: Optional[str] = Field(default=None, description="(optional) override to force a particular back‑end LLM")
     max_tokens: Optional[int] = 1024
-    # extra_body: dict | None = None
+    extra_body: Optional[dict] = None
 
 class ChatResponse(BaseModel):
     model: str
@@ -193,10 +193,13 @@ def convert_messages_to_partial_trajectory(messages: List[ChatMessage]) -> List[
                 end_index = msg.content.find(end_bookend)
                 if end_index == -1:
                     raise ValueError(f"End bookend not found in user message: {msg.content}")
-                partial_trajectory.append({"source": "user", "content": msg.content[start_index:end_index+len(end_bookend)]})
+                partial_trajectory.append({"source": "user", "message": msg.content[start_index:end_index+len(end_bookend)]})
                 first_user_message_found = True
         elif msg.role == "assistant":
-            partial_trajectory.append({"source": "agent", "content": msg.content})
+            if msg.metadata is not None and msg.metadata.get("model_name") is not None:
+                partial_trajectory.append({"source": "agent", "message": msg.content, "model_name": msg.metadata["model_name"]})
+            else:
+                partial_trajectory.append({"source": "agent", "message": msg.content, "model_name": None})
 
     # Check that the partial trajectory is not empty
     if not partial_trajectory:
@@ -236,21 +239,40 @@ def count_cache_read_tokens(messages: List[ChatMessage]) -> int:
 
     # ======================================================================
     
-    # find the last user message
-    last_user_message_number = -1
+    # # find the last user message
+    # last_user_message_number = -1
+    # current_message_number = 0
+    # for message in messages:
+    #     if message["role"] == "user":
+    #         last_user_message_number = current_message_number
+    #     current_message_number += 1
+    # # add everything up to but excluding the last user message to cache_read
+    # for i in range(last_user_message_number):
+    #     print(f"[DEBUG] Adding message to cache read: {messages[i]}")
+    #     cache_read.append(messages[i])
+    # # add everything after the last user message to cache_write
+    # for i in range(last_user_message_number, len(messages)):
+    #     print(f"[DEBUG] Adding message to cache write: {messages[i]}")
+    #     cache_write.append(messages[i])    
+        
+    # ======================================================================
+    
+    # find the last assistant message
+    last_assistant_message_number = -1
     current_message_number = 0
     for message in messages:
-        if message["role"] == "user":
-            last_user_message_number = current_message_number
+        if message["role"] == "assistant":
+            last_assistant_message_number = current_message_number
         current_message_number += 1
-    # add everything up to but excluding the last user message to cache_read
-    for i in range(last_user_message_number):
-        print(f"[DEBUG] Adding message to cache read: {messages[i]}")
-        cache_read.append(messages[i])
-    # add everything after the last user message to cache_write
-    for i in range(last_user_message_number, len(messages)):
+    # add everything up to and EXCLUDING the last assistant message to cache_read
+    if last_assistant_message_number != -1:
+        for i in range(last_assistant_message_number):
+            print(f"[DEBUG] Adding message to cache read: {messages[i]}")
+            cache_read.append(messages[i])
+    # add everything after the last assistant message to cache_write
+    for i in range(last_assistant_message_number, len(messages)):
         print(f"[DEBUG] Adding message to cache write: {messages[i]}")
-        cache_write.append(messages[i])    
+        cache_write.append(messages[i])
     
     count_read = token_counter(model="litellm_proxy/neulab/claude-3-5-haiku-20241022", messages=cache_read)
     count_write = token_counter(model="litellm_proxy/neulab/claude-3-5-haiku-20241022", messages=cache_write)
@@ -265,11 +287,13 @@ def apply_prompt_caching(messages: List[ChatMessage], model_name: str) -> List[C
 
     For new Anthropic API, we only need to mark the last user or tool message as cacheable.
     """
+    print("[DEBUG] In apply_prompt_caching...")
     if "claude" in model_name:
         # make the content map to a list of dicts instead of a string
         for message in messages:
             # only do this if the content is a string
             if isinstance(message["content"], str):
+                print(f"[DEBUG] MYSTERY FORMATTING ACTIVATED ON MESSAGE: {message}")
                 message["content"] = [{"type": "text", "text": message["content"]}]
         if len(messages) > 0 and messages[0]["role"] == 'system':
             messages[0]["content"][-1]["cache_control"] = {"type": "ephemeral"}
@@ -280,6 +304,23 @@ def apply_prompt_caching(messages: List[ChatMessage], model_name: str) -> List[C
                 break
     return messages
 
+def apply_mystery_formatting(messages: List[ChatMessage]) -> List[ChatMessage]:
+    print("[DEBUG] In apply_mystery_formatting...")
+    # make the content map to a list of dicts instead of a string
+    for message in messages:
+        # only do this if the content is a string
+        if isinstance(message["content"], str):
+            message["content"] = [{"type": "text", "text": message["content"]}]
+    return messages
+
+def strip_metadata(messages: List[ChatMessage]) -> List[ChatMessage]:
+    """Strip the metadata from the messages."""
+    print(f"[DEBUG] In strip_metadata...")
+    stripped_messages = []
+    for message in messages:
+        stripped_messages.append(ChatMessage(role=message['role'], content=message['content']))
+    return stripped_messages
+
 @app.post("/v1/chat/completions")
 async def route_chat(req: ChatRequest):
     """Proxy the chat completion to the routed model."""
@@ -289,8 +330,8 @@ async def route_chat(req: ChatRequest):
     
     # print(f"\n\n\n\n[DEBUG] Request: {req}\n\n\n\n")
     
-    # # Print the request's attributes
-    # print(f"[DEBUG] Request attributes: {dir(req)}")
+    # Print the request's attributes
+    print(f"[DEBUG] Request attributes: {dir(req)}")
     
     # # Debug: Print the request's messages
     # print(f"[DEBUG] Request messages: {debug_json_content(req.messages)}")
@@ -300,6 +341,12 @@ async def route_chat(req: ChatRequest):
         print(f"[DEBUG {datetime.datetime.now().isoformat()}] Message metadata: {msg.metadata}")
         print(f"[DEBUG {datetime.datetime.now().isoformat()}] Message: {msg.model_dump()}")
     
+    print(f"[DEBUG {datetime.datetime.now().isoformat()}] request extra_body: {req.extra_body}")
+     
+    # strip the metadata
+    stripped_messages = strip_metadata([msg.model_dump() for msg in req.messages])
+    
+    #convert to trajectory format - this is purely for router model purposes (so that the format is consistent with the training data)
     trajectory_dicts = convert_messages_to_partial_trajectory(req.messages)
     # Double check that the trajectory is not empty
     if not trajectory_dicts:
@@ -316,9 +363,12 @@ async def route_chat(req: ChatRequest):
         selected_model = random.choice(AVAILABLE_MODELS)
         # append "litellm_proxy/" to the model name
         selected_model = "litellm_proxy/" + selected_model
-        # selected_model = "litellm_proxy/neulab/claude-3-5-haiku-20241022" # REMOVE THIS AFTER DEBUGGING TODO
+        selected_model = "litellm_proxy/neulab/claude-3-5-haiku-20241022" # REMOVE THIS AFTER DEBUGGING TODO
         # selected_model = "litellm_proxy/neulab/claude-sonnet-4-20250514" # REMOVE THIS AFTER DEBUGGING TODO
-        selected_model = "litellm_proxy/neulab/deepseek-v3" # REMOVE THIS AFTER DEBUGGING TODO
+        # selected_model = "litellm_proxy/neulab/deepseek-v3" # REMOVE THIS AFTER DEBUGGING TODO
+        # selected_model = "litellm_proxy/fireworks_ai/accounts/fireworks/models/deepseek-v3"
+        # selected_model = "litellm_proxy/neulab/devstral-small-2505"
+        # selected_model = "litellm_proxy/neulab/kimi-k2-0711-preview"
         print(f"[DEBUG {datetime.datetime.now().isoformat()}] Random selected: {selected_model}")
     elif trajectory_dicts:
         print(f"[DEBUG {datetime.datetime.now().isoformat()}] Using router inference with {len(trajectory_dicts)} trajectory events")
@@ -342,21 +392,37 @@ async def route_chat(req: ChatRequest):
     print(f"[DEBUG {datetime.datetime.now().isoformat()}] Final selected model: {selected_model}")
     
     try:
+        # compute cache read and write tokens
         print(f"[DEBUG {datetime.datetime.now().isoformat()}] Counting cache read and write tokens before sending to LiteLLM proxy")
         count_read, count_write = count_cache_read_tokens([msg.model_dump() for msg in req.messages])
         print(f"[DEBUG {datetime.datetime.now().isoformat()}] Manually computed cache read tokens: {count_read}")
         print(f"[DEBUG {datetime.datetime.now().isoformat()}] Manually computed cache write tokens: {count_write}")
-        print(f"[DEBUG {datetime.datetime.now().isoformat()}] Applying caching to messages...")
-        cache_applied_messages = apply_prompt_caching([msg.model_dump() for msg in req.messages], selected_model)
+        
+        # TODO: UNCOMMENT THIS
+        # # apply some formatting (?) confused about exactly why but whatever
+        # formatted_messages = apply_mystery_formatting(stripped_messages)
+        
+        # apply prompt caching to stripped messages
+        print(f"[DEBUG {datetime.datetime.now().isoformat()}] Applying caching to stripped messages...")
+        cache_applied_messages = apply_prompt_caching([msg.model_dump() for msg in req.messages], selected_model) # TODO: replace stripped_messages with formatted_messages
         for cache_applied_msg in cache_applied_messages:
             print(f"[DEBUG {datetime.datetime.now().isoformat()}] Cache applied message: {cache_applied_msg}")
         print(f"[DEBUG {datetime.datetime.now().isoformat()}] Calling LiteLLM proxy with model: {selected_model}")
+        # raise ValueError("I just don't want to deal with the LiteLLM proxy dramatics right now...") # TODO: remove this after debugging
+        
+        # messages = [
+        #     {"role": "system", "content": "Respond in pirate speak."},
+        #     {"role": "user", "content": "How are you?"},
+        # ]
+        
+        print("######## [DEBUG] SENDING REQUEST ########")
         response = completion(
             base_url="https://cmu.litellm.ai",
             api_key=os.getenv("LITELLM_API_KEY"),
             model=selected_model,
             # Note to my future self, because I know you will get confused: KEEP THIS AS IS - it is going to the actual LLM, not the router model
-            messages=cache_applied_messages, 
+            messages=cache_applied_messages, # UNCOMMENT AFTER DEBUG TODO
+            # messages=req.messages,
             max_tokens=req.max_tokens,
         )
     except BadRequestError as e:
