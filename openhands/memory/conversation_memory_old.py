@@ -256,7 +256,7 @@ class ConversationMemory:
                 tool_calls=assistant_msg.tool_calls,
                 metadata={'model_name': llm_response.model},
             )
-            return [] # ??? why does this return an empty list
+            return []
         elif isinstance(action, AgentFinishAction):
             print(f"[DEBUG] ++++++ AgentFinishAction detected ++++++")
             role = 'user' if action.source == 'user' else 'assistant'
@@ -327,7 +327,7 @@ class ConversationMemory:
                 Message(
                     role='user',  # Always user for CmdRunAction
                     content=content,
-                    # metadata={'model_name': action.tool_call_metadata.model_response.model}, # NOTE: not really sure if this will work since it seems like this is when the source is the user? hopefully this never gets used?
+                    metadata={'model_name': action.tool_call_metadata.model_response.model}, # NOTE: not really sure if this will work since it seems like this is when the source is the user? hopefully this never gets used?
                 )
             ]
         elif isinstance(action, SystemMessageAction):

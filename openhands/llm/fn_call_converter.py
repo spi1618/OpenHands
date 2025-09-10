@@ -587,7 +587,10 @@ def convert_fncall_messages_to_non_fncall_messages(
                     raise FunctionCallConversionError(
                         f'Unexpected content type {type(content)}. Expected str or list. Content: {content}'
                     )
-            converted_messages.append({'role': 'assistant', 'content': content})
+            if 'metadata' in message:
+                converted_messages.append({'role': 'assistant', 'content': content, 'metadata': message['metadata']})
+            else:
+                converted_messages.append({'role': 'assistant', 'content': content})
 
         # 4. TOOL MESSAGES (tool outputs)
         elif role == 'tool':
