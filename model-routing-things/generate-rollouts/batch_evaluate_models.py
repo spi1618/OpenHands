@@ -26,8 +26,8 @@ def run_inference(model_config: Dict, experiment_name: str, eval_limit: int, max
         str(eval_limit),             # EVAL_LIMIT
         str(max_iter),               # MAX_ITER
         str(num_workers),            # NUM_WORKERS
-        "SWE-Gym/SWE-Gym",           # DATASET (default is SWE-Bench lite)
-        "train",                     # SPLIT
+        "princeton-nlp/SWE-bench_Verified",           # DATASET (default is SWE-Bench lite), other option is "princeton-nlp/SWE-bench_Verified"
+        "test",                     # SPLIT
         "1",                         # N_RUNS (default is 1)
         "swe"                        # MODE (default is swe)
     ]
@@ -172,8 +172,10 @@ def main():
             
             # Run evaluation if not skipped
             if not args.skip_evaluation and output_file:
-                print(f"[INFO] Running evaluation for model: {model['name']} at timestamp: {timestamp}\n")
-                run_evaluation(output_file, model, args.num_workers)
+                # Skipping eval always until further notice
+                print(f"[INFO] what are you doing? we're skipping eval always until further notice")
+                # print(f"[INFO] Running evaluation for model: {model['name']} at timestamp: {timestamp}\n")
+                # run_evaluation(output_file, model, args.num_workers)
             
         except Exception as e:
             print(f"[ERROR] Failed for model {model['name']}: {e}")

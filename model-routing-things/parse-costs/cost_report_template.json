@@ -1,0 +1,29 @@
+{
+    "instance_id": "django__django__3.2",
+    "history": [
+        {
+            "request_uuid": "a1c414f6-47cd-4e2e-9cff-c048abd386a1",
+            "selected_model": "litellm_proxy/neulab/claude-3-5-haiku-20241022",
+            "estimated_cache_read_tokens": 100,
+            "estimated_cache_write_tokens": 100,
+            "actual_output_tokens": 100,
+            "est_cost": 0.01
+        },
+        {
+            "request_uuid": "a1c414f6-47cd-4e2e-9cff-c048abd386a1",
+            "selected_model": "litellm_proxy/neulab/claude-3-5-haiku-20241022",
+            "estimated_cache_read_tokens": 100,
+            "estimated_cache_write_tokens": 100,
+            "actual_output_tokens": 100,
+            "est_cost": 0.01
+        }
+    ],
+    "total_est_cost": 0.02,
+    "model_usage": {
+        "litellm_proxy/neulab/claude-3-5-haiku-20241022": 9,
+        "litellm_proxy/neulab/claude-sonnet-4-20250514": 3,
+        "litellm_proxy/neulab/kimi-k2-0711-preview": 26,
+        "litellm_proxy/neulab/deepseek-v3": 2,
+        "litellm_proxy/neulab/devstral-small-2505": 1
+    }
+}

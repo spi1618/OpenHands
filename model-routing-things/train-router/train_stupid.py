@@ -61,11 +61,17 @@ CONSISTENT_WNAME_TRAIN_DATASET_PATH_16384_20000 = ""
 # about 2000 samples
 CONSISTENT_WNAME_VAL_DATASET_PATH_16384_20000 = "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_consistent_cleaned_no-oh-prompt_partial-trajectories_2025-08-30T19-46-44/20000-samples/20250906_150645_val_chat-template-v2_max-len-16384.jsonl"
 
+# SFT LAMBDA=10, EPS=0.1, 1600 samples
+SFT_LAMBDA_10_EPS_0_1_TRAIN_DATASET_PATH = "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/SFT-1_instance-40_2025-09-28T20-17-56/2000-samples/20250928_203848_train_chat-template-v2_max-len-16384.jsonl"
+# SFT LAMBDA=10, EPS=0.1, 400 samples
+SFT_LAMBDA_10_EPS_0_1_VAL_DATASET_PATH = "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/SFT-1_instance-40_2025-09-28T20-17-56/2000-samples/20250928_203916_val_chat-template-v2_max-len-16384.jsonl"
+
+
 ######################### NEW STUFF #########################################################
 
 ##### SET THIS BEFORE EVERY RUN AND CHECK THAT THE VALUES ARE CORRECT + MATCH THE TRAINING DATASET #####
-PATH_TO_TRAIN_DATASET = CONSISTENT_TRAIN_DATASET_PATH_16384_20000
-PATH_TO_VALID_DATASET = CONSISTENT_VAL_DATASET_PATH_16384_20000
+PATH_TO_TRAIN_DATASET = SFT_LAMBDA_10_EPS_0_1_TRAIN_DATASET_PATH
+PATH_TO_VALID_DATASET = SFT_LAMBDA_10_EPS_0_1_VAL_DATASET_PATH
 
 # This should match the datasets
 MAX_TOKENS = 16384
@@ -77,8 +83,8 @@ EVAL_BATCH_SIZE = 1
 NUM_EPOCHS = 2
 
 # CHANGE THIS IF YOU CHANGE THE DATASET (esp. if you use an unbalanced dataset or notokens)
-CHECKPOINT_DIR = f"/data/user_data/sophiapi/checkpoints/stupid_consistent_qwen3_router_model-5_instance-100_max-length-{MAX_TOKENS}_samples-20000"
-WANDB_NAME = f"qwen3-router-sft-stupid-consistent-model-5-instance-100-max-length-{MAX_TOKENS}-samples-20000"
+CHECKPOINT_DIR = f"/data/user_data/sophiapi/checkpoints/stupid_SFT-1_instance-40_max-length-{MAX_TOKENS}_samples-2000"
+WANDB_NAME = f"qwen3-router-sft-stupid-SFT-1-instance-40-max-length-{MAX_TOKENS}-samples-2000"
 
 # Load local JSONL files  
 train_dataset = load_dataset("json", data_files=PATH_TO_TRAIN_DATASET, split="train")  
@@ -181,7 +187,7 @@ training_args = SFTConfig(
   
 # Initialize trainer  
 trainer = SFTTrainer(  
-    model="Qwen/Qwen2.5-0.5B-Instruct",  
+    model="/data/user_data/sophiapi/checkpoints/stupid_consistent_qwen3_router_model-5_instance-100_max-length-16384_samples-20000/checkpoint-4500",  
     args=training_args,  
     train_dataset=train_dataset,  
     eval_dataset=val_dataset,  

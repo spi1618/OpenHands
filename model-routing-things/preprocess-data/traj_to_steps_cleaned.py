@@ -74,6 +74,7 @@ def extract_partial_trajectory_from_history(history, event_number, total_events,
             continue
         # ================================
         # Compute the number of output tokens that the agent will generate on the immediate next step
+        # Also get the model name that the agent will use to generate the next step
         # --------------------------------
         # Find the next action event
         next_action_event = current_event + 1
@@ -89,17 +90,37 @@ def extract_partial_trajectory_from_history(history, event_number, total_events,
             # Note to future self: originally I tried to detect this, but sometimes there were the shenanigans were too shenanigan-y and I gave up
             # if current_event < total_events - 3: # -3 instead of -1 because sometimes shenanigans i don't understand happen and the last event is not an action event
             #     raise ValueError(f"No next action event found in history (total events {total_events}) for event {event.get('id')}")
-            next_step_output_tokens = current_accumulated_output_tokens
+            next_step_accumulated_output_tokens = current_accumulated_output_tokens
+            # Set the next step model name to "[End of trajectory, no next model name]"
+            next_step_model_name = "[no next model name]"
         else:
             if "llm_metrics" not in history[next_action_event].keys():
                 print(f"LLM metrics not found in history[next_action_event] where next_action_event = {next_action_event} and total events = {total_events}")
                 print(f"history[next_action_event] where next_action_event = {next_action_event}: {history[next_action_event]}")
                 raise ValueError(f"LLM metrics not found in history[next_action_event] where next_action_event = {next_action_event}")
             next_step_accumulated_output_tokens = history[next_action_event]["llm_metrics"]["accumulated_token_usage"]["completion_tokens"]
+            # Extract the model name that the agent will use to generate the next step
+            if "tool_call_metadata" not in history[next_action_event].keys():
+                # Honestly not really sure why this happens, but just let it be
+                next_step_model_name = "[no next model name]"
+                # print(f"Tool call metadata not found in history[next_action_event] where next_action_event = {next_action_event} and total events = {total_events}")
+                # print(f"history[next_action_event] where next_action_event = {next_action_event}: {history[next_action_event]}")
+                # raise ValueError(f"Tool call metadata not found in history[next_action_event] where next_action_event = {next_action_event}")
+            else:
+                model_raw = history[next_action_event]["tool_call_metadata"]["model_response"]["model"]
+                if model_raw not in map_raw_model_name_to_model_name.keys():
+                    raise ValueError(f"Model {model_raw} not found in map_raw_model_name_to_model_name")
+                next_step_model_name = map_raw_model_name_to_model_name[model_raw]
+                # Check that the model name is consistent with the model names list given by main function
+                if next_step_model_name not in model_names:
+                    raise ValueError(f"Model {next_step_model_name} not found in model_names")            
         # --------------------------------
         # Compute the difference between the next step accumulated output tokens and the current accumulated output tokens
         next_step_output_tokens = str(next_step_accumulated_output_tokens - current_accumulated_output_tokens)
         cleaned_event["next_step_output_tokens"] = next_step_output_tokens
+        # --------------------------------
+        # Assign the next step model name
+        cleaned_event["next_step_model_name"] = next_step_model_name
         # ================================
         # Extract the message of the event
         cleaned_event["message"] = event.get("message")
@@ -127,43 +148,47 @@ def main():
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     # Create a subdirectory within the output directory to store the cleaned partial trajectories and the text file of metadata
-    subdir = output_dir / f"model-5_instance-100_with-ids_swe-gym_consistent_cleaned_no-oh-prompt_partial-trajectories_{timestamp.replace(':', '-')}"
+    subdir = output_dir / f"SFT-1_instance-40_{timestamp.replace(':', '-')}"
     subdir.mkdir(parents=True, exist_ok=True)
     # HARDCODED
-    stepwise_traj_jsonl = subdir / f"model-5_instance-100_with-ids_swe-gym_consistent_cleaned_no-oh-prompt_partial-trajectories_{timestamp.replace(':', '-')}.jsonl"
-    metadata_txt = subdir / f"model-5_instance-100_with-ids_swe-gym_consistent_cleaned_no-oh-prompt_partial-trajectories_{timestamp.replace(':', '-')}.txt"
+    stepwise_traj_jsonl = subdir / f"SFT-1_instance-40_{timestamp.replace(':', '-')}.jsonl"
+    metadata_txt = subdir / f"metadata_{timestamp.replace(':', '-')}.txt"
     
     all_partial_trajectories = []
     
     # Model to output directories mapping - allows multiple directories per model
     model_output_dirs = {
-        "claude-3-5-haiku": [
-            "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/outputs/SWE-Gym__SWE-Gym-train/CodeActAgent/claude-3-5-haiku-20241022_maxiter_100_N_v0.43.0-no-hint-run_1_20250726_182956/output.jsonl",
-            "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/outputs/SWE-Gym__SWE-Gym-train/CodeActAgent/claude-3-5-haiku-20241022_maxiter_100_N_v0.43.0-no-hint-run_1_20250801_000045/output.jsonl",
-            "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/outputs/SWE-Gym__SWE-Gym-train/CodeActAgent/claude-3-5-haiku-20241022_maxiter_100_N_v0.43.0-no-hint-run_1_20250801_022525/output.jsonl",
-            "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/outputs/SWE-Gym__SWE-Gym-train/CodeActAgent/claude-3-5-haiku-20241022_maxiter_100_N_v0.43.0-no-hint-run_1_20250801_042435/output.jsonl",
-            "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/outputs/SWE-Gym__SWE-Gym-train/CodeActAgent/claude-3-5-haiku-20241022_maxiter_100_N_v0.43.0-no-hint-run_1_20250804_231650/output.jsonl",
-        ],
-        "claude-sonnet-4": [
-            "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/outputs/SWE-Gym__SWE-Gym-train/CodeActAgent/claude-sonnet-4-20250514_maxiter_100_N_v0.43.0-no-hint-run_1_20250725_232903/output.jsonl",
-        ],
-        "deepseek-v3": [
-            "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/outputs/SWE-Gym__SWE-Gym-train/CodeActAgent/deepseek-v3_maxiter_100_N_v0.43.0-no-hint-run_1_20250726_180617/output.jsonl",
-            "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/outputs/SWE-Gym__SWE-Gym-train/CodeActAgent/deepseek-v3_maxiter_100_N_v0.43.0-no-hint-run_1_20250731_170336/output.jsonl",
-        ],
-        "devstral-small": [
-            "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/outputs/SWE-Gym__SWE-Gym-train/CodeActAgent/devstral-small-2505_maxiter_100_N_v0.43.0-no-hint-run_1_20250731_170650/output.jsonl"
-        ],
-        "kimi-k2": [
-            "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/outputs/SWE-Gym__SWE-Gym-train/CodeActAgent/kimi-k2-0711-preview_maxiter_100_N_v0.43.0-no-hint-run_1_20250731_170858/output.jsonl"
-        ],
+        # "claude-3-5-haiku": [
+        #     "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/outputs/SWE-Gym__SWE-Gym-train/CodeActAgent/claude-3-5-haiku-20241022_maxiter_100_N_v0.43.0-no-hint-run_1_20250726_182956/output.jsonl",
+        #     "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/outputs/SWE-Gym__SWE-Gym-train/CodeActAgent/claude-3-5-haiku-20241022_maxiter_100_N_v0.43.0-no-hint-run_1_20250801_000045/output.jsonl",
+        #     "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/outputs/SWE-Gym__SWE-Gym-train/CodeActAgent/claude-3-5-haiku-20241022_maxiter_100_N_v0.43.0-no-hint-run_1_20250801_022525/output.jsonl",
+        #     "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/outputs/SWE-Gym__SWE-Gym-train/CodeActAgent/claude-3-5-haiku-20241022_maxiter_100_N_v0.43.0-no-hint-run_1_20250801_042435/output.jsonl",
+        #     "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/outputs/SWE-Gym__SWE-Gym-train/CodeActAgent/claude-3-5-haiku-20241022_maxiter_100_N_v0.43.0-no-hint-run_1_20250804_231650/output.jsonl",
+        # ],
+        # "claude-sonnet-4": [
+        #     "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/outputs/SWE-Gym__SWE-Gym-train/CodeActAgent/claude-sonnet-4-20250514_maxiter_100_N_v0.43.0-no-hint-run_1_20250725_232903/output.jsonl",
+        # ],
+        # "deepseek-v3": [
+        #     "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/outputs/SWE-Gym__SWE-Gym-train/CodeActAgent/deepseek-v3_maxiter_100_N_v0.43.0-no-hint-run_1_20250726_180617/output.jsonl",
+        #     "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/outputs/SWE-Gym__SWE-Gym-train/CodeActAgent/deepseek-v3_maxiter_100_N_v0.43.0-no-hint-run_1_20250731_170336/output.jsonl",
+        # ],
+        # "devstral-small": [
+        #     "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/outputs/SWE-Gym__SWE-Gym-train/CodeActAgent/devstral-small-2505_maxiter_100_N_v0.43.0-no-hint-run_1_20250731_170650/output.jsonl"
+        # ],
+        # "kimi-k2": [
+        #     "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/outputs/SWE-Gym__SWE-Gym-train/CodeActAgent/kimi-k2-0711-preview_maxiter_100_N_v0.43.0-no-hint-run_1_20250731_170858/output.jsonl"
+        # ],
         # "qwen3-coder": [
         #     "TO BE FILLED IN"
         # ]
+        "gpt-3.5-turbo": [
+            "/home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/outputs/SWE-Gym__SWE-Gym-train/CodeActAgent/gpt-3.5-turbo_maxiter_100_N_v0.43.0-no-hint-run_1_20250915_125058/output.jsonl"
+        ]
     }
     
     # List of all model names
     model_names_list = list(model_output_dirs.keys())
+    model_names_list = ["claude-3-5-haiku", "claude-sonnet-4", "deepseek-v3", "devstral-small", "kimi-k2"]
     
     skipped_instances = {model: [] for model in model_output_dirs.keys()}
     zero_nontrivial_events_instances = {model: [] for model in model_output_dirs.keys()}

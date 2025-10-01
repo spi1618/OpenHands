@@ -19,9 +19,9 @@ from trl import SFTTrainer, SFTConfig, apply_chat_template
 # Example usage:
 
 # python3 convert_raw_to_pc_chat-template.py \
-# --original-file /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_consistent_cleaned_no-oh-prompt_partial-trajectories_2025-08-30T19-46-44/20000-samples/val.jsonl \
-# --pc-output-dir /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_consistent_cleaned_no-oh-prompt_partial-trajectories_2025-08-30T19-46-44/20000-samples/ \
-# --hf-output-dir /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_consistent_cleaned_no-oh-prompt_partial-trajectories_2025-08-30T19-46-44/20000-samples/ \
+# --original-file /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/SFT-1_instance-40_2025-09-28T20-17-56/2000-samples/val.jsonl \
+# --pc-output-dir /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/SFT-1_instance-40_2025-09-28T20-17-56/2000-samples/ \
+# --hf-output-dir /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/SFT-1_instance-40_2025-09-28T20-17-56/2000-samples/ \
 # --base-model Qwen/Qwen2.5-0.5B-Instruct \
 # --max-length 16384 \
 # --max-filter-tokens 32000
@@ -152,18 +152,9 @@ def convert_dataset_format(raw_data: List[Dict], max_length: int = 8192, max_fil
     # Compute the number of tokens in my (yes me, long-suffering summer intern) part of the prompt
     with open("/home/sophiapi/model-routing/static_things/system_prompt.txt", "r", encoding="utf-8") as f:
         system_part = f.read()
-    # system_part = (
-    #     "You predict whether the agent or assistant will ultimately solve the SWE issue successfully given the partial trajectory so far and the candidate model that will be used to attempt the rest of the task.\n"
-    #     "You also predict how many output tokens the candidate model will generate on the immediate next step by\n"
-    #     "Respond with YES or NO followed by ... For example, if you predict that the candidate model will be successful and will generate 100 output tokens, you should respond with 'Success: YES, Output tokens: Bucket 8'.\n"
-    #     # TODO: FIX THIS AND SET UP THE BUCKETS
-    #     "The partial trajectory contains information about the agent or assistant's actions, and the names of the models that they used to take the actions.\n"
-    #     "The intermediate steps in the partial trajectory may be omitted for brevity.\n"
-    #     "The user will provide the partial trajectory.\n"
-    # )
     trajectory_header = "### Partial trajectory:\n\n\n"
     model_part = f"### Candidate model\n[M] FILLER-TEXT-TO-UPPER-BOUND-LENGTH-OF-MODEL-NAME\n\n"
-    question_part = "### Will this agent eventually succeed if the rest of the task is attempted with the candidate model? Into which of the 8 output token buckets will the candidate model's immediate next step fall?"
+    question_part = "### Will this agent eventually succeed if the next step of the task is attempted with the candidate model? Into which of the 8 output token buckets will the candidate model's immediate next step fall?"
     
     system_tokens = len(tokenizer.encode(system_part))
     trajectory_header_tokens = len(tokenizer.encode(trajectory_header))
@@ -175,15 +166,18 @@ def convert_dataset_format(raw_data: List[Dict], max_length: int = 8192, max_fil
     
     for i, item in enumerate(raw_data):
         # Extract fields
-        model_name = item["model"]
+        model_name = item["model"] # <-- technically we don't need this, but just keeping it for now
         successfully_patched = item["successfully_patched"]
         partial_trajectory = item["partial_trajectory"]
         
-        # Scalp the partial trajectory
+        # Get the next model name
+        next_model_name = partial_trajectory[-1]["next_step_model_name"]
+        
+        # Scalp the partial trajectory (this leaves partial_trajectory with only the source, message, and model_name keys)
         partial_trajectory, next_token_count = scalp_token_counts_from_partial_trajectory(partial_trajectory)
         
         # Construct model_part
-        model_part = f"### Candidate model\n[M] {model_name}\n\n"
+        model_part = f"### Candidate model\n[M] {next_model_name}\n\n"
         
         # Coarse filter: skip extremely long examples that would lose too much context
         if tokenizer:

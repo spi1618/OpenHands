@@ -1,7 +1,8 @@
 #!/bin/bash
 # ───── Slurm resource requests ─────────────────────────────────────────
-#SBATCH --job-name=db-kimi-rollouts           # appears in squeue
-#SBATCH --partition=general             # up to 2 days; preempt for longer
+#SBATCH --job-name=sweb-deepseek-rollouts           # appears in squeue
+#SBATCH --partition=cpu           
+#SBATCH --qos=cpu_qos
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:0               # no gpus needed for remote runtime
 #SBATCH --cpus-per-task=8
@@ -28,23 +29,24 @@ echo "=== Environment loaded ==="
 echo "=== ALLHANDS_API_KEY: ${ALLHANDS_API_KEY:0:10}... ==="
 
 # Move to the directory
-cd ~/model-routing/OpenHands
+cd ~/model-routing/OpenHands-clean
 echo "=== Changed to directory: $(pwd) ==="
 echo "=== Python version: $(python3 --version) ==="
 
 # Check if the script exists
 echo "=== Checking if batch script exists ==="
-ls -la evaluation/benchmarks/swe_bench/scripts/batch_evaluate_models.py
+ls -la /home/sophiapi/model-routing/OpenHands-clean/evaluation/benchmarks/swe_bench/scripts/batch_evaluate_models.py
 
 # Check if config exists
 echo "=== Checking if config exists ==="
-ls -la evaluation/benchmarks/swe_bench/configs/models_config.yaml
+ls -la /home/sophiapi/model-routing/OpenHands-clean/evaluation/benchmarks/swe_bench/configs/models_config.yaml
 
 # Run the Python script with unbuffered output
 echo "=== Starting batch evaluation ==="
-python3 -u evaluation/benchmarks/swe_bench/scripts/batch_evaluate_models.py \
-  --config evaluation/benchmarks/swe_bench/configs/models_config.yaml \
-  --num-workers 1
+python3 -u /home/sophiapi/model-routing/OpenHands-clean/evaluation/benchmarks/swe_bench/scripts/batch_evaluate_models.py \
+  --config /home/sophiapi/model-routing/OpenHands-clean/evaluation/benchmarks/swe_bench/configs/models_config.yaml \
+  --num-workers 2 \
+  --skip-evaluation
 
 echo "=== Job completed at $(date) ==="
 

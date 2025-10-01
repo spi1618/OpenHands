@@ -8,14 +8,14 @@ models:
   # - name: "claude-sonnet-4"
   #   llm_config: "llm.neulab_claude_sonnet_4"
 
-  # - name: "deepseek-v3"
-  #   llm_config: "llm.neulab_deepseek_v3"
+  - name: "deepseek-v3"
+    llm_config: "llm.neulab_deepseek_v3"
     
   # - name: "devstral-small"
   #   llm_config: "llm.neulab_devstral_small"
 
-  - name: "kimi-k2"
-    llm_config: "llm.neulab_kimi_k2"
+  # - name: "kimi-k2"
+  #   llm_config: "llm.neulab_kimi_k2"
 
   # - name: "qwen3-coder"
   #   llm_config: "llm.neulab_qwen3_coder"
@@ -27,7 +27,7 @@ models:
 # dataset: "princeton-nlp/SWE-bench_Lite"
 
 # Max #instances to evaluate  (-1 = everything in split)
-eval_limit: 1
+eval_limit: 50
 
 # Controller max-iteration cap for each instance
-max_iter: 10
+max_iter: 100

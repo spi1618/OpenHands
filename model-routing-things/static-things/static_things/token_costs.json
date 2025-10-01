@@ -1,18 +1,18 @@
 {
     "claude-3-5-haiku": {
       "cached_input_cost": 0.00000008,
-      "uncached_input_cost": 0.0000008,
+      "uncached_input_cost": 0.000001,
       "output_cost": 0.000004
     },
     "claude-sonnet-4": {
       "cached_input_cost": 0.0000003,
-      "uncached_input_cost": 0.000003,
+      "uncached_input_cost": 0.00000375,
       "output_cost": 0.000015
     },
     "deepseek-v3": {
       "cached_input_cost": 0.00000007,
-      "uncached_input_cost": 0.00000027,
-      "output_cost": 0.0000011
+      "uncached_input_cost": 0.00000056,
+      "output_cost": 0.00000168
     },
     "devstral-small": {
       "cached_input_cost": 0.0000001,

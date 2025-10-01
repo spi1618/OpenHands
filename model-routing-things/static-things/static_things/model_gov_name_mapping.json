@@ -1,0 +1,7 @@
+{
+    "neulab/claude-3-5-haiku-20241022": "litellm_proxy/claude-3-5-haiku-20241022",
+    "neulab/claude-sonnet-4-20250514": "litellm_proxy/claude-sonnet-4-20250514",
+    "neulab/deepseek-v3": "litellm_proxy/fireworks_ai/accounts/fireworks/deepseek-v3",
+    "neulab/devstral-small-2505": "litellm_proxy/mistral/devstral-small-2505",
+    "neulab/kimi-k2-0711-preview": "litellm_proxy/kimi-k2-0711-preview"
+}

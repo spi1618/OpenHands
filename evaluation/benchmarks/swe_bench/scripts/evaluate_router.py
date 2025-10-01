@@ -64,7 +64,7 @@ def start_router_server(router_dir: str, api_key: str, random_mode: bool = False
     
     return process
 
-def run_router_inference(eval_limit: int, max_iter: int, num_workers: int = 1):
+def run_router_inference(eval_limit: int, max_iter: int, num_workers: int = 1, eval_dataset: str = "princeton-nlp/SWE-bench_Verified", split: str = "test"):
     """Run inference using the router."""
     # [ignore] Use the router LLM config from the model-routing directory
     # router_llm_config = "../router_llm_config.toml"
@@ -81,8 +81,8 @@ def run_router_inference(eval_limit: int, max_iter: int, num_workers: int = 1):
         str(eval_limit),             # EVAL_LIMIT
         str(max_iter),               # MAX_ITER
         str(num_workers),            # NUM_WORKERS
-        "princeton-nlp/SWE-bench_Verified",   # DATASET
-        "test",                      # SPLIT
+        eval_dataset,   # DATASET
+        split,                      # SPLIT
         "1",                         # N_RUNS (default is 1)
         "swe"                        # MODE (default is swe)
     ]
@@ -137,7 +137,7 @@ def run_router_inference(eval_limit: int, max_iter: int, num_workers: int = 1):
         print(f"[INFO] Router inference completed")
         return None
 
-def run_router_evaluation(output_file: str, num_workers: int = 1):
+def run_router_evaluation(output_file: str, num_workers: int = 1, eval_dataset: str = "princeton-nlp/SWE-bench_Verified", split: str = "test"):
     """Run evaluation for router results."""
     if not output_file or not os.path.exists(output_file):
         print(f"[ERROR] Output file {output_file} does not exist. Skipping evaluation for router")
@@ -147,8 +147,8 @@ def run_router_evaluation(output_file: str, num_workers: int = 1):
         "/home/sophiapi/model-routing/OpenHands/evaluation/benchmarks/swe_bench/scripts/eval_infer.sh",
         output_file,                 # INPUT_FILE
         str(num_workers),            # NUM_WORKERS
-        "princeton-nlp/SWE-bench_Verified",   # DATASET
-        "test"                      # SPLIT
+        eval_dataset,   # DATASET
+        split                      # SPLIT
     ]
     env = os.environ.copy()
     env.update({
@@ -226,6 +226,8 @@ def main():
     parser.add_argument("--analyze-decisions", default=False, action="store_true", help="Analyze router decisions after inference")
     parser.add_argument("--router-url", default="http://localhost:8123", help="URL of the router server")
     parser.add_argument("--random-mode", default=False, action="store_true", help="Enable random mode for router server")
+    parser.add_argument("--eval-dataset", default="princeton-nlp/SWE-bench_Verified", help="Dataset to evaluate on")
+    parser.add_argument("--split", default="test", help="Split to evaluate on")
     args = parser.parse_args()
     
     router_process = None
@@ -259,7 +261,7 @@ def main():
         print(f"[INFO] Running router inference at timestamp: {timestamp}\n")
         
         # Run inference with router
-        output_file = run_router_inference(args.eval_limit, args.max_iter, args.num_workers)
+        output_file = run_router_inference(args.eval_limit, args.max_iter, args.num_workers, args.eval_dataset, args.split)
         
         # Analyze router decisions if requested
         if args.analyze_decisions and output_file:
@@ -268,7 +270,7 @@ def main():
         # Run evaluation if not skipped
         if not args.skip_evaluation and output_file:
             print(f"[INFO] Running router evaluation at timestamp: {timestamp}\n")
-            run_router_evaluation(output_file, args.num_workers)
+            run_router_evaluation(output_file, args.num_workers, args.eval_dataset, args.split)
         
     except Exception as e:
         print(f"[ERROR] Failed for router: {e}")

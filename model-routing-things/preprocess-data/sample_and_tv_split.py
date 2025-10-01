@@ -9,11 +9,11 @@
 
 # Example usage:
 # python3 sample_and_tv_split.py \
-#     --input-file /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/model-5_instance-100_with-ids_swe-gym_consistent_cleaned_no-oh-prompt_partial-trajectories_2025-08-30T19-46-44/model-5_instance-100_with-ids_swe-gym_consistent_cleaned_no-oh-prompt_partial-trajectories_2025-08-30T19-46-44.jsonl \
-#     --sample-size 20000 \
-#     --train-proportion 0.9 \
+#     --input-file /home/sophiapi/model-routing/OpenHands/evaluation/evaluation_outputs/datasets/SFT-1_instance-40_2025-09-28T20-17-56/SFT-1_instance-40_2025-09-28T20-17-56.jsonl \
+#     --sample-size 2000 \
+#     --train-proportion 0.8 \
 #     --success-rate 0.4 
-# This will sample 20000 examples from the full dataset, putting 90% of the instances in the train set and 10% in the validation set, and aiming for a 10% success rate in both sets.
+# This will sample 2000 examples from the full dataset, putting 80% of the instances in the train set and 20% in the validation set, and aiming for a 40% success rate in both sets.
 # This will create a relatively balanced dataset where about 40% of the examples in both sets are successful and about 60% are unsuccessful.
 
 # Ensures that examples with the same instance_id are in the same set (no two examples with the same instance_id in different sets)

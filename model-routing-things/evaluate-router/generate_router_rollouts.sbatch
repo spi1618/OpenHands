@@ -1,9 +1,8 @@
 #!/bin/bash
 # ───── Slurm resource requests ─────────────────────────────────────────
-#SBATCH --job-name=router-rollout-stupid-deepseek-only           # appears in squeue
+#SBATCH --job-name=router-rollout-stupid-RANDOM-EVAL-50         # appears in squeue
 #SBATCH --partition=general             # up to 2 days; preempt for longer
-#SBATCH --nodes=1
-#SBATCH --gres=gpu:0               
+#SBATCH --nodes=1               
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
 #SBATCH --time=0-48:00                  # D-HH:MM   (48 h here)
@@ -27,6 +26,9 @@ source /home/sophiapi/.env
 echo "=== Environment loaded ==="
 echo "=== ALLHANDS_API_KEY: ${ALLHANDS_API_KEY:0:10}... ==="
 echo "=== LITELLM_API_KEY: ${LITELLM_API_KEY:0:10}... ==="
+echo "=== ROUTER_URL: ${ROUTER_URL} ==="
+# echo "=== STUPID: ${STUPID} ==="
+# echo "HELLO WORLD"
 
 # Move to the directory
 cd ~/model-routing/OpenHands
@@ -47,6 +49,10 @@ ANALYZE_DECISIONS=${ANALYZE_DECISIONS:-true}
 RANDOM_MODE=${RANDOM_MODE:-false}
 ROUTER_URL=${ROUTER_URL:-"http://localhost:8123"}
 ROUTER_CHECKPOINT=${ROUTER_CHECKPOINT:-"checkpoint-796"} # this is just in case you haven't started the router yet
+EVAL_DATASET=${EVAL_DATASET:-"princeton-nlp/SWE-bench_Verified"}
+# other options are "SWE-Gym/SWE-Gym"
+SPLIT=${SPLIT:-"test"}
+# other options are "train" 
 
 echo "=== Configuration ==="
 echo "  Eval Limit: ${EVAL_LIMIT}"
@@ -66,6 +72,8 @@ CMD_ARGS=(
     "--max-iter" "${MAX_ITER}"
     "--num-workers" "${NUM_WORKERS}"
     "--router-url" "${ROUTER_URL}"
+    "--eval-dataset" "${EVAL_DATASET}"
+    "--split" "${SPLIT}"
 )
 
 if [ "$SKIP_EVAL" = "true" ]; then

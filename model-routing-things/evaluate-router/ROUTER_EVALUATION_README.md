@@ -45,6 +45,12 @@ export START_ROUTER=true
 # Analyze router decisions (default: true)
 export ANALYZE_DECISIONS=false
 
+# Evaluation dataset (default: "princeton-nlp/SWE-bench_Verified")
+export EVAL_DATASET="SWE-Gym/SWE-Gym"
+
+# Split of eval dataset to use (default: "test")
+export SPLIT="train"
+
 # [AT ROUTER LAUNCH TIME, i.e. ON COMPUTE NODE] Enable random mode instead of router model (default: false)
 export RANDOM_MODE=true
 # Note that if running on cluster, RANDOM_MODE needs to be set before launching the router - if it is set after launching the router but before the batch script, then that setting will be ignored
@@ -55,9 +61,40 @@ export ROUTER_URL="http://babel-2-25:8123"  # Use actual hostname in cluster
 
 ## Cluster Usage
 
-For cluster environments where the router runs on a different node:
+### Option 1: Unified Script (Recommended)
 
-### 1. Start router server on a compute node
+For a streamlined approach that starts the router and runs rollouts in a single job:
+
+```bash
+# From the model-routing directory
+cd ~/model-routing
+
+# Set environment variables (optional, defaults are provided)
+export EVAL_LIMIT=50
+export MAX_ITER=50
+export NUM_WORKERS=4
+export RANDOM_MODE=false
+export ROUTER_PORT=8123
+export ROUTER_CHECKPOINT=checkpoint-4500
+export EVAL_DATASET="SWE-Gym/SWE-Gym"
+export SPLIT="train"
+
+# Submit unified batch job
+sbatch batch-scripts/start_router_and_run_rollouts.sbatch
+```
+
+This approach:
+- Automatically starts the router server on the compute node
+- Waits for the router to be healthy before starting evaluation
+- Runs the full evaluation pipeline
+- Automatically cleans up the router server when done
+- No need to manually manage interactive sessions
+
+### Option 2: Manual Router Management
+
+For cluster environments where you want to manually control the router:
+
+#### 1. Start router server on a compute node
 ```bash
 # Get interactive node for router
 salloc -p debug --gres=gpu:1 --time=0-2:00 --mem=64G
@@ -77,40 +114,45 @@ export MAX_TOKENS=8192
 export ROUTER_PORT=8000
 # Set random mode (defaults to False)
 export RANDOM_MODE=True
+# Set lambda (defaults to 30)
+export LAMBDA=20
+# Set epsilon (defaults to 0)
+export EPSILON=0.1
+
 python3 swe_bench_router_stupid.py
 # To automatically save everything that shows up in the terminal to a text file:
 python3 swe_bench_router_stupid.py 2>&1 | tee "router_stupid_debug_$(date +%Y%m%d_%H%M%S).log"
-# Note: Server starts on http://babel-2-25:8123 (or whatever hostname)
+# Note: Server starts on http://babel-6-13:8123 (or whatever hostname)
 ```
 
-### 2. Test Router Connectivity (optional)
+#### 2. Test Router Connectivity (optional)
 ```bash
 # 1. Test health endpoint
 curl http://YOUR_HOSTNAME:8123/health
-# Example: curl http://babel-4-13:8123/health
+# Example: curl http://babel-6-13:8123/health
 
-# 2. Test chat endpoint
+# 2. Test chat endpoint - IGNORE THIS, THIS IS WRONG
 curl -X POST http://YOUR_HOSTNAME:8123/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"messages":[{"role":"user","content":"Hello"}]}'
 # Example: curl -X POST http://babel-4-13:8123/v1/chat/completions -H "Content-Type: application/json" -d '{"messages":[{"role":"user","content":"Hello"}]}'
 ```
 
-### 3. Update OpenHands config
+#### 3. Update OpenHands config
 ```bash
 # Update the OpenHands config with the actual hostname
 cd ~/model-routing/OpenHands
 sed -i "/\[llm\.router\]/,/^\[/ s/base_url = \"http:\/\/[^:]*:8123\/v1\"/base_url = \"http:\/\/YOUR_HOSTNAME:8123\/v1\"/" config.toml
-# Example: sed -i "/\[llm\.router\]/,/^\[/ s/base_url = \"http:\/\/[^:]*:8123\/v1\"/base_url = \"http:\/\/babel-6-5:8123\/v1\"/" config.toml
+# Example: sed -i "/\[llm\.router\]/,/^\[/ s/base_url = \"http:\/\/[^:]*:8123\/v1\"/base_url = \"http:\/\/babel-6-13:8123\/v1\"/" config.toml
 ```
 
-### 4. Run evaluation with correct router URL
+#### 4. Run evaluation with correct router URL
 ```bash
 # Export environment variables...
 
 # Set the router URL to match your router server
 export ROUTER_URL="http://YOUR_HOSTNAME:8123"
-# eg. export ROUTER_URL="http://babel-4-29:8123"
+# eg. export ROUTER_URL="http://babel-6-13:8123"
 
 # Configure parameters (see "Configuration" above)
 
@@ -193,7 +235,8 @@ When `RANDOM_MODE=true` is set, the router server will ignore the fine-tuned rou
 ## Files
 
 - `evaluate_router.py` - Main evaluation script
-- `generate_router_rollouts.sbatch` - SLURM batch script
+- `generate_router_rollouts.sbatch` - SLURM batch script (for separate router management)
+- `start_router_and_run_rollouts.sbatch` - Unified SLURM batch script (recommended)
 - `config.toml` - OpenHands configuration with router settings
-- `swe_bench_router.py` - Router server implementation
-- `router_inference.py` - Router model inference logic 
+- `swe_bench_router_stupid.py` - Router server implementation
+- `router_inference_stupid.py` - Router model inference logic 
